@@ -1,8 +1,11 @@
-# (©)Codeflix_Bots
+#(©)Codeflix_Bots
+
+
 
 import os
 import asyncio
-from pyrogram import Client, filters
+from pyrogram import Client, filters, __version__
+from pyrogram.enums import ParseMode
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 
@@ -12,8 +15,8 @@ from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
 
 
-# Start command for all users (whether subscribed or not)
-@Bot.on_message(filters.command('start') & filters.private)
+
+@Bot.on_message(filters.command('start') & filters.private & subscribed)
 async def start_command(client: Client, message: Message):
     id = message.from_user.id
     if not await present_user(id):
@@ -21,84 +24,142 @@ async def start_command(client: Client, message: Message):
             await add_user(id)
         except:
             pass
-
     text = message.text
-    if len(text) > 7:  # Payload handling for start command (optional)
+    if len(text)>7:
         try:
             base64_string = text.split(" ", 1)[1]
-            await handle_payload(client, message, base64_string)  # Handling file access or actions
         except:
-            pass
+            return
+        string = await decode(base64_string)
+        argument = string.split("-")
+        if len(argument) == 3:
+            try:
+                start = int(int(argument[1]) / abs(client.db_channel.id))
+                end = int(int(argument[2]) / abs(client.db_channel.id))
+            except:
+                return
+            if start <= end:
+                ids = range(start,end+1)
+            else:
+                ids = []
+                i = start
+                while True:
+                    ids.append(i)
+                    i -= 1
+                    if i < end:
+                        break
+        elif len(argument) == 2:
+            try:
+                ids = [int(int(argument[1]) / abs(client.db_channel.id))]
+            except:
+                return
+        temp_msg = await message.reply("ᴡᴀɪᴛ ʙʀᴏᴏ...")
+        try:
+            messages = await get_messages(client, ids)
+        except:
+            await message.reply_text("ɪ ꜰᴇᴇʟ ʟɪᴋᴇ ᴛʜᴇʀᴇ ɪꜱ ꜱᴏᴍᴇᴛʜɪɴɢ ᴡʀᴏɴɢ..!")
+            return
+        await temp_msg.delete()
+
+        for msg in messages:
+
+            if bool(CUSTOM_CAPTION) & bool(msg.document):
+                caption = CUSTOM_CAPTION.format(previouscaption = "" if not msg.caption else msg.caption.html, filename = msg.document.file_name)
+            else:
+                caption = "" if not msg.caption else msg.caption.html
+
+            if DISABLE_CHANNEL_BUTTON:
+                reply_markup = msg.reply_markup
+            else:
+                reply_markup = None
+
+            try:
+                await msg.copy(chat_id=message.from_user.id, caption = caption, parse_mode = ParseMode.HTML, reply_markup = reply_markup, protect_content=PROTECT_CONTENT)
+                await asyncio.sleep(0.5)
+            except FloodWait as e:
+                await asyncio.sleep(e.x)
+                await msg.copy(chat_id=message.from_user.id, caption = caption, parse_mode = ParseMode.HTML, reply_markup = reply_markup, protect_content=PROTECT_CONTENT)
+            except:
+                pass
+        return
     else:
         reply_markup = InlineKeyboardMarkup(
             [
-                [InlineKeyboardButton("⚡️ ᴀʙᴏᴜᴛ", callback_data="about"),
-                 InlineKeyboardButton('🍁 sᴇʀɪᴇsғʟɪx', url='https://t.me/Team_Netflix/40')]
+
+    [
+                    InlineKeyboardButton("⚡️ ᴀʙᴏᴜᴛ", callback_data = "about"),
+                    InlineKeyboardButton('🍁 sᴇʀɪᴇsғʟɪx', url='https://t.me/Team_Netflix/40')
+
+    ]
             ]
         )
         await message.reply_text(
-            text=START_MSG.format(
-                first=message.from_user.first_name,
-                last=message.from_user.last_name,
-                username=None if not message.from_user.username else '@' + message.from_user.username,
-                mention=message.from_user.mention,
-                id=message.from_user.id
+            text = START_MSG.format(
+                first = message.from_user.first_name,
+                last = message.from_user.last_name,
+                username = None if not message.from_user.username else '@' + message.from_user.username,
+                mention = message.from_user.mention,
+                id = message.from_user.id
             ),
-            reply_markup=reply_markup,
-            disable_web_page_preview=True,
-            quote=True
+            reply_markup = reply_markup,
+            disable_web_page_preview = True,
+            quote = True
         )
+        return   
 
 
-# Handle file access or action based on the payload
-async def handle_payload(client: Client, message: Message, payload: str):
-    if not await subscribed(client, message):  # Subscription check
-        buttons = [
-            [InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink2)],
-            [InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ •", url=client.invitelink3)],
-            [InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ •", url=client.invitelink)],
-            [InlineKeyboardButton(text="🔄 Try Again", callback_data="try_again")]  # Try again button
+#=====================================================================================##
+
+WAIT_MSG = "<b>ᴡᴏʀᴋɪɴɢ....</b>"
+
+REPLY_ERROR = "<code>Use this command as a reply to any telegram message without any spaces.</code>"
+
+#=====================================================================================##
+
+
+
+@Bot.on_message(filters.command('start') & filters.private)
+async def not_joined(client: Client, message: Message):
+    buttons = [
+        [
+            InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink2),
+            InlineKeyboardButton(text="ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ •", url=client.invitelink3),
+        ],
+        [
+            InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ •", url=client.invitelink),
         ]
-        await message.reply(
-            text=FORCE_MSG.format(
-                first=message.from_user.first_name,
-                last=message.from_user.last_name,
-                username=None if not message.from_user.username else '@' + message.from_user.username,
-                mention=message.from_user.mention,
-                id=message.from_user.id
-            ),
-            reply_markup=InlineKeyboardMarkup(buttons),
-            quote=True,
-            disable_web_page_preview=True
+    ]
+    try:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text = '• ɴᴏᴡ ᴄʟɪᴄᴋ ʜᴇʀᴇ •',
+                    url = f"https://t.me/{client.username}?start={message.command[1]}"
+                )
+            ]
         )
-        return
+    except IndexError:
+        pass
 
-    # If the user is subscribed, handle the file access or action
-    temp_msg = await message.reply(f"Accessing file or action based on the payload: {payload}... 🗂")
-    # Your file access or any other action logic here
-    await temp_msg.delete()
+    await message.reply(
+        text = FORCE_MSG.format(
+                first = message.from_user.first_name,
+                last = message.from_user.last_name,
+                username = None if not message.from_user.username else '@' + message.from_user.username,
+                mention = message.from_user.mention,
+                id = message.from_user.id
+            ),
+        reply_markup = InlineKeyboardMarkup(buttons),
+        quote = True,
+        disable_web_page_preview = True
+    )
 
-
-# Handle "Try Again" button click to recheck subscription
-@Bot.on_callback_query(filters.regex("try_again"))
-async def try_again_callback(client: Client, callback_query: CallbackQuery):
-    message = callback_query.message
-    if await subscribed(client, message):  # Recheck subscription
-        await message.edit_text("✅ You're now subscribed! Accessing the file/action...")
-        # Perform the action (like fetching the file or completing the task)
-    else:
-        await message.edit_text("❗️ You're still not subscribed. Please join the channels and try again.")
-
-
-# Admins can get the list of users
 @Bot.on_message(filters.command('users') & filters.private & filters.user(ADMINS))
 async def get_users(client: Bot, message: Message):
-    msg = await client.send_message(chat_id=message.chat.id, text="<b>ᴡᴏʀᴋɪɴɢ....</b>")
+    msg = await client.send_message(chat_id=message.chat.id, text=WAIT_MSG)
     users = await full_userbase()
     await msg.edit(f"{len(users)} ᴜꜱᴇʀꜱ ᴀʀᴇ ᴜꜱɪɴɢ ᴛʜɪꜱ ʙᴏᴛ")
 
-
-# Admins can broadcast messages
 @Bot.on_message(filters.private & filters.command('broadcast') & filters.user(ADMINS))
 async def send_text(client: Bot, message: Message):
     if message.reply_to_message:
@@ -132,15 +193,15 @@ async def send_text(client: Bot, message: Message):
 
         status = f"""<b><u>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ ᴍʏ sᴇɴᴘᴀɪ!!</u>
 
-        ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ: <code>{total}</code>
-        ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ: <code>{successful}</code>
-        ʙʟᴏᴄᴋᴇᴅ ᴜꜱᴇʀꜱ: <code>{blocked}</code>
-        ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛꜱ: <code>{deleted}</code>
-        ᴜɴꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ: <code>{unsuccessful}</code></b></b>"""
+ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ: <code>{total}</code>
+ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ: <code>{successful}</code>
+ʙʟᴏᴄᴋᴇᴅ ᴜꜱᴇʀꜱ: <code>{blocked}</code>
+ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛꜱ: <code>{deleted}</code>
+ᴜɴꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ: <code>{unsuccessful}</code></b></b>"""
 
         return await pls_wait.edit(status)
 
     else:
-        msg = await message.reply("<code>Use this command as a reply to any telegram message without any spaces.</code>")
+        msg = await message.reply(REPLY_ERROR)
         await asyncio.sleep(8)
         await msg.delete()
