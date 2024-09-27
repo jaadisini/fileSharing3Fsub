@@ -1,9 +1,5 @@
 # (©)Codeflix_Bots
 
-@Bot.on_callback_query(filters.regex('close'))
-async def close_button(client: Client, callback_query: CallbackQuery):
-    await callback_query.message.delete()
-
 import os
 import asyncio
 from pyrogram import Client, filters, __version__
@@ -211,3 +207,7 @@ async def send_text(client: Bot, message: Message):
         await asyncio.sleep(8)
         await msg.delete()
 
+
+@Bot.on_callback_query(filters.regex('close'))
+async def close_button(client: Client, callback_query: CallbackQuery):
+    await callback_query.message.delete()
