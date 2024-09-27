@@ -3,8 +3,7 @@
 import os
 import asyncio
 from pyrogram import Client, filters
-from pyrogram.enums import ParseMode
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 
 from bot import Bot
@@ -13,7 +12,7 @@ from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
 
 
-# Always show START_MSG when user starts the bot (with or without start payload)
+# Start command for all users (whether subscribed or not)
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
     id = message.from_user.id
@@ -24,14 +23,13 @@ async def start_command(client: Client, message: Message):
             pass
 
     text = message.text
-    if len(text) > 7:  # Check if the start command has a payload
+    if len(text) > 7:  # Payload handling for start command (optional)
         try:
-            payload = text.split(" ", 1)[1]  # Extract the start payload
-            await handle_payload(client, message, payload)
+            base64_string = text.split(" ", 1)[1]
+            await handle_payload(client, message, base64_string)  # Handling file access or actions
         except:
             pass
     else:
-        # No payload, just show the start message
         reply_markup = InlineKeyboardMarkup(
             [
                 [InlineKeyboardButton("⚡️ ᴀʙᴏᴜᴛ", callback_data="about"),
@@ -52,7 +50,7 @@ async def start_command(client: Client, message: Message):
         )
 
 
-# Force subscription with "Try Again" button after the user joins the channels
+# Handle file access or action based on the payload
 async def handle_payload(client: Client, message: Message, payload: str):
     if not await subscribed(client, message):  # Subscription check
         buttons = [
@@ -75,13 +73,13 @@ async def handle_payload(client: Client, message: Message, payload: str):
         )
         return
 
-    # If the user is subscribed, proceed with the action or file access
+    # If the user is subscribed, handle the file access or action
     temp_msg = await message.reply(f"Accessing file or action based on the payload: {payload}... 🗂")
-    # Your file access or any action logic goes here
+    # Your file access or any other action logic here
     await temp_msg.delete()
 
 
-# Handling "Try Again" Button Click (Re-check Subscription)
+# Handle "Try Again" button click to recheck subscription
 @Bot.on_callback_query(filters.regex("try_again"))
 async def try_again_callback(client: Client, callback_query: CallbackQuery):
     message = callback_query.message
