@@ -45,11 +45,11 @@ START_MSG = os.environ.get("START_MESSAGE",
     "<b>I'm fast like a cheetah 🐆💨</b>"
 )
 try:
-    ADMINS=[6376328008]
-    for x in (os.environ.get("ADMINS", "5115691197 6273945163 6103092779 2005714953 5231212075 6497757690").split()):
-        ADMINS.append(int(x))
+    # Initialize ADMINS list from the environment variable
+    ADMINS = [int(x) for x in os.environ.get("ADMINS", "").split()]
+    
 except ValueError:
-        raise Exception("Your Admins list does not contain valid integers.")
+    raise Exception("Your Admins list does not contain valid integers.")
 
 #Force sub message 
 FORCE_MSG = os.environ.get("FORCE_SUB_MESSAGE", 
