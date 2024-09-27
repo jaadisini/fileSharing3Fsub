@@ -8,15 +8,20 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, 
 @Bot.on_callback_query()
 async def cb_handler(client: Bot, query: CallbackQuery):
     data = query.data
+    user = query.from_user  # Get the user who initiated the interaction
+    
     if data == "about":
         await query.message.edit_text(
-            text = f"<b>○ Creator : Bot Father</a>\n○ My best Friend : <a href='tg://user?id={user.id}'>{user.first_name}</a>\n</a></b>",
-            disable_web_page_preview = True,
-            reply_markup = InlineKeyboardMarkup(
+            text = (
+                f"<b>○ Creator : Bot Father\n"
+                f"○ My best Friend : <a href='tg://user?id={user.id}'>{user.first_name}</a>\n</b>"
+            ),
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                    InlineKeyboardButton("Close", callback_data = "close"),
-                    InlineKeyboardButton('Main Channel', url='https://t.me/OtakuFlix_Network/4639')
+                        InlineKeyboardButton("Close", callback_data="close"),
+                        InlineKeyboardButton('Main Channel', url='https://t.me/OtakuFlix_Network/4639')
                     ]
                 ]
             )
