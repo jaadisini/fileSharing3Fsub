@@ -1,10 +1,10 @@
-#(©)Codeflix_Bots
+# (©)Codeflix_Bots
 
 import os
 import asyncio
-from pyrogram import Client, filters, __version__
+from pyrogram import Client, filters
 from pyrogram.enums import ParseMode
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 
 from bot import Bot
@@ -13,7 +13,7 @@ from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
 
 
-# 1. Always show START_MSG when user starts the bot
+# Always show START_MSG when user starts the bot (with or without start payload)
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
     id = message.from_user.id
@@ -23,29 +23,40 @@ async def start_command(client: Client, message: Message):
         except:
             pass
 
-    reply_markup = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("⚡️ ᴀʙᴏᴜᴛ", callback_data="about"),
-             InlineKeyboardButton('🍁 sᴇʀɪᴇsғʟɪx', url='https://t.me/Team_Netflix/40')]
-        ]
-    )
-    await message.reply_text(
-        text=START_MSG.format(
-            first=message.from_user.first_name,
-            last=message.from_user.last_name,
-            username=None if not message.from_user.username else '@' + message.from_user.username,
-            mention=message.from_user.mention,
-            id=message.from_user.id
-        ),
-        reply_markup=reply_markup,
-        disable_web_page_preview=True,
-        quote=True
-    )
+    text = message.text
+    if len(text) > 7:  # Check if the start command has a payload
+        try:
+            payload = text.split(" ", 1)[1]  # Extract the start payload
+            # Decode or handle the payload (use it for file access or whatever you need)
+            # You can modify this part to handle different actions based on the payload
+            # Here is just an example of handling file access using the payload
+            await handle_payload(client, message, payload)
+        except:
+            pass
+    else:
+        # No payload, just show the start message
+        reply_markup = InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("⚡️ ᴀʙᴏᴜᴛ", callback_data="about"),
+                 InlineKeyboardButton('🍁 sᴇʀɪᴇsғʟɪx', url='https://t.me/Team_Netflix/40')]
+            ]
+        )
+        await message.reply_text(
+            text=START_MSG.format(
+                first=message.from_user.first_name,
+                last=message.from_user.last_name,
+                username=None if not message.from_user.username else '@' + message.from_user.username,
+                mention=message.from_user.mention,
+                id=message.from_user.id
+            ),
+            reply_markup=reply_markup,
+            disable_web_page_preview=True,
+            quote=True
+        )
 
 
-# 2. Force subscription message when user tries to access a file (if not subscribed)
-@Bot.on_message(filters.command('get_file') & filters.private)
-async def get_file_command(client: Client, message: Message):
+# Force subscription if user tries to access files and hasn't subscribed
+async def handle_payload(client: Client, message: Message, payload: str):
     if not await subscribed(client, message):  # Subscription check
         buttons = [
             [InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink2)],
@@ -66,13 +77,14 @@ async def get_file_command(client: Client, message: Message):
         )
         return
 
-    # If they are subscribed, send the file
-    temp_msg = await message.reply("Getting your file... 🗂")
-    # Your file sending logic here
+    # If the user is subscribed, you can handle the payload, such as giving them access to files
+    temp_msg = await message.reply(f"Accessing file or action based on the payload: {payload}... 🗂")
+    # You can decode the payload and fetch the correct file or action
+    # Your file access or any action logic goes here
     await temp_msg.delete()
 
 
-# 3. Admins can get the list of users
+# Admins can get the list of users
 @Bot.on_message(filters.command('users') & filters.private & filters.user(ADMINS))
 async def get_users(client: Bot, message: Message):
     msg = await client.send_message(chat_id=message.chat.id, text="<b>ᴡᴏʀᴋɪɴɢ....</b>")
@@ -80,7 +92,7 @@ async def get_users(client: Bot, message: Message):
     await msg.edit(f"{len(users)} ᴜꜱᴇʀꜱ ᴀʀᴇ ᴜꜱɪɴɢ ᴛʜɪꜱ ʙᴏᴛ")
 
 
-# 4. Admins can broadcast messages
+# Admins can broadcast messages
 @Bot.on_message(filters.private & filters.command('broadcast') & filters.user(ADMINS))
 async def send_text(client: Bot, message: Message):
     if message.reply_to_message:
