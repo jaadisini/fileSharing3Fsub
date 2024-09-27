@@ -27,9 +27,6 @@ async def start_command(client: Client, message: Message):
     if len(text) > 7:  # Check if the start command has a payload
         try:
             payload = text.split(" ", 1)[1]  # Extract the start payload
-            # Decode or handle the payload (use it for file access or whatever you need)
-            # You can modify this part to handle different actions based on the payload
-            # Here is just an example of handling file access using the payload
             await handle_payload(client, message, payload)
         except:
             pass
@@ -55,13 +52,14 @@ async def start_command(client: Client, message: Message):
         )
 
 
-# Force subscription if user tries to access files and hasn't subscribed
+# Force subscription with "Try Again" button after the user joins the channels
 async def handle_payload(client: Client, message: Message, payload: str):
     if not await subscribed(client, message):  # Subscription check
         buttons = [
             [InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink2)],
             [InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ •", url=client.invitelink3)],
-            [InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ •", url=client.invitelink)]
+            [InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ •", url=client.invitelink)],
+            [InlineKeyboardButton(text="🔄 Try Again", callback_data="try_again")]  # Try again button
         ]
         await message.reply(
             text=FORCE_MSG.format(
@@ -77,11 +75,21 @@ async def handle_payload(client: Client, message: Message, payload: str):
         )
         return
 
-    # If the user is subscribed, you can handle the payload, such as giving them access to files
+    # If the user is subscribed, proceed with the action or file access
     temp_msg = await message.reply(f"Accessing file or action based on the payload: {payload}... 🗂")
-    # You can decode the payload and fetch the correct file or action
     # Your file access or any action logic goes here
     await temp_msg.delete()
+
+
+# Handling "Try Again" Button Click (Re-check Subscription)
+@Bot.on_callback_query(filters.regex("try_again"))
+async def try_again_callback(client: Client, callback_query: CallbackQuery):
+    message = callback_query.message
+    if await subscribed(client, message):  # Recheck subscription
+        await message.edit_text("✅ You're now subscribed! Accessing the file/action...")
+        # Perform the action (like fetching the file or completing the task)
+    else:
+        await message.edit_text("❗️ You're still not subscribed. Please join the channels and try again.")
 
 
 # Admins can get the list of users
