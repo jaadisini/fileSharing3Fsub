@@ -1,5 +1,9 @@
 # (©)Codeflix_Bots
 
+@Bot.on_callback_query(filters.regex('close'))
+async def close_button(client: Client, callback_query: CallbackQuery):
+    await callback_query.message.delete()
+
 import os
 import asyncio
 from pyrogram import Client, filters, __version__
@@ -126,7 +130,7 @@ async def start_command(client: Client, message: Message):
             [
                 [
                     InlineKeyboardButton("⚡️ ᴀʙᴏᴜᴛ", callback_data="about"),
-                    InlineKeyboardButton('🍁 sᴇʀɪᴇsғʟɪx', url='https://t.me/Team_Netflix/40')
+                    InlineKeyboardButton('Close', callback_data="close")
                 ]
             ]
         )
