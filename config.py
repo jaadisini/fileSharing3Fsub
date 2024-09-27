@@ -41,7 +41,7 @@ TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "4"))
 #start message
 START_MSG = os.environ.get("START_MESSAGE", 
     "<b>👋 Hello {mention}!\n\n"
-    "I can store private files in a secret channel, and other users can access them through a special link! 🔐📁\n\n"
+    "I can store private files in a specified channel, and other users can access them from a special link! 🔐📁\n\n"
     "I'm fast like a cheetah 🐆💨</b>"
 )
 try:
