@@ -40,9 +40,10 @@ TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "4"))
 
 #start message
 START_MSG = os.environ.get("START_MESSAGE", 
-    "<b>👋 Hello {first} ({mention})!\n\n"
+    "<b>👋 Hello {mention}!\n\n"
     "I can store private files in a secret channel, and other users can access them through a special link! 🔐📁\n\n"
-    "I'm fast like a cheetah 🐆💨</b>")
+    "I'm fast like a cheetah 🐆💨</b>"
+)
 try:
     ADMINS=[6376328008]
     for x in (os.environ.get("ADMINS", "5115691197 6273945163 6103092779 2005714953 5231212075 6497757690").split()):
