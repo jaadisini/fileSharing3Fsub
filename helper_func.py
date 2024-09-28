@@ -1,5 +1,4 @@
-#(©)CodexBotz
-#Recoded By @Codeflix_Bots
+# (©)Codexbotz @Codeflix_Bots
 
 import base64
 import re
@@ -12,27 +11,35 @@ from pyrogram.errors import FloodWait
 
 # Force subscription check
 async def is_subscribed(client, user_id):
+    unsubscribed_channels = []
+
+    # Check if ForceSub is enabled for any channel
     if not (FORCESUB_CHANNEL or FORCESUB_CHANNEL2 or FORCESUB_CHANNEL3):
-        return True
+        return unsubscribed_channels
 
     if user_id in ADMINS:
-        return True
+        return unsubscribed_channels
 
     member_status = ChatMemberStatus.OWNER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.MEMBER
 
-    for channel_id in [FORCESUB_CHANNEL, FORCESUB_CHANNEL2, FORCESUB_CHANNEL3]:
+    # Check each channel
+    for channel_id, invitelink in zip(
+            [FORCESUB_CHANNEL, FORCESUB_CHANNEL2, FORCESUB_CHANNEL3], 
+            [client.invitelink, client.invitelink2, client.invitelink3]):
         if not channel_id:
             continue
 
         try:
             member = await client.get_chat_member(chat_id=channel_id, user_id=user_id)
         except UserNotParticipant:
-            return False
+            unsubscribed_channels.append(invitelink)
+            continue
 
         if member.status not in member_status:
-            return False
+            unsubscribed_channels.append(invitelink)
 
-    return True
+    return unsubscribed_channels
+
 
 async def encode(string):
     string_bytes = string.encode("ascii")
