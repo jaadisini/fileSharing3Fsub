@@ -23,7 +23,7 @@ async def start_command(client: Client, message: Message):
             pass
 
     text = message.text
-    # If the user started the bot with an encoded link
+   # If the user started the bot with an encoded link
     if len(text) > 7:
         try:
             base64_string = text.split(" ", 1)[1]
@@ -91,24 +91,21 @@ async def start_command(client: Client, message: Message):
                     pass
             return
         else:
-            # If not subscribed, send force-join message
-            buttons = [
-                [
-                    InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink2),
-                ],
-                [
-                    InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink3),
-                ],
-                [
-                    InlineKeyboardButton(text=" 🟢 Join Channel ", url=client.invitelink),
-                ],
-                [
-                    InlineKeyboardButton(
-                        text=' 🔄 Try Again ',
-                        url=f"https://t.me/{client.username}?start={message.command[1]}"
-                    )
-                ]
-            ]
+            # If not subscribed, send force-join message and show only the buttons for channels they haven’t joined
+            buttons = []
+            
+            if not await subscribed_to_channel(client, message.from_user.id, client.invitelink2):
+                buttons.append([InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink2)])
+            
+            if not await subscribed_to_channel(client, message.from_user.id, client.invitelink3):
+                buttons.append([InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink3)])
+
+            if not await subscribed_to_channel(client, message.from_user.id, client.invitelink):
+                buttons.append([InlineKeyboardButton(text=" 🟢 Join Channel ", url=client.invitelink)])
+
+            # Add the Try Again button
+            buttons.append([InlineKeyboardButton(text=' 🔄 Try Again ', url=f"https://t.me/{client.username}?start={message.command[1]}")])
+
             await message.reply(
                 text=FORCE_MSG.format(
                     first=message.from_user.first_name,
