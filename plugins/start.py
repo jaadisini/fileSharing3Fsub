@@ -37,13 +37,13 @@ async def start_command(client: Client, message: Message):
         # Check which channels the user has not subscribed to
         unsubscribed_channels = []
         
-        if not await is_subscribed(client, message.from_user.id, client.invitelink2):
+        if not await subscribed(client, message.from_user.id, client.invitelink2):
             unsubscribed_channels.append(("🔴 Join Channel 1", client.invitelink2))
 
-        if not await is_subscribed(client, message.from_user.id, client.invitelink3):
+        if not await subscribed(client, message.from_user.id, client.invitelink3):
             unsubscribed_channels.append(("🔵 Join Channel 2", client.invitelink3))
 
-        if not await is_subscribed(client, message.from_user.id, client.invitelink):
+        if not await subscribed(client, message.from_user.id, client.invitelink):
             unsubscribed_channels.append(("🟢 Join Channel 3", client.invitelink))
 
         # If there are channels they haven't subscribed to, prompt them to join
