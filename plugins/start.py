@@ -94,15 +94,15 @@ async def start_command(client: Client, message: Message):
             # If not subscribed, send force-join message
             buttons = [
                 [
-                    InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink2),
-                    InlineKeyboardButton(text="ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ •", url=client.invitelink3),
+                    InlineKeyboardButton(text="• 🔴 Join Channel", url=client.invitelink2),
+                    InlineKeyboardButton(text=" 🔵 Join Channel •", url=client.invitelink3),
                 ],
                 [
-                    InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ •", url=client.invitelink),
+                    InlineKeyboardButton(text="• 🟢 Join Channel •", url=client.invitelink),
                 ],
                 [
                     InlineKeyboardButton(
-                        text='• ɴᴏᴡ ᴄʟɪᴄᴋ ʜᴇʀᴇ •',
+                        text='• 🔄 Try Again •',
                         url=f"https://t.me/{client.username}?start={message.command[1]}"
                     )
                 ]
