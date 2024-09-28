@@ -23,7 +23,7 @@ async def start_command(client: Client, message: Message):
             pass
 
     text = message.text
-# If the user started the bot with an encoded link
+    # If the user started the bot with an encoded link
     if len(text) > 7:
         try:
             base64_string = text.split(" ", 1)[1]
@@ -50,7 +50,8 @@ async def start_command(client: Client, message: Message):
                     while True:
                         ids.append(i)
                         i -= 1
-                        if i < end, break
+                        if i < end:
+                            break
             elif len(argument) == 2:
                 try:
                     ids = [int(int(argument[1]) / abs(client.db_channel.id))]
@@ -94,13 +95,13 @@ async def start_command(client: Client, message: Message):
             buttons = []
 
             # Check if user is subscribed to each channel, only show the button for unsubscribed channels
-            if not await subscribed(client, message):
+            if not await subscribed(client, message, client.invitelink2):
                 buttons.append([InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink2)])
 
-            if not await subscribed(client, message):
+            if not await subscribed(client, message, client.invitelink3):
                 buttons.append([InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink3)])
 
-            if not await subscribed(client, message):
+            if not await subscribed(client, message, client.invitelink):
                 buttons.append([InlineKeyboardButton(text=" 🟢 Join Channel ", url=client.invitelink)])
 
             # Add the Try Again button
