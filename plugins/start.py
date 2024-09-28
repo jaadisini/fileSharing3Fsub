@@ -50,8 +50,7 @@ async def start_command(client: Client, message: Message):
                     while True:
                         ids.append(i)
                         i -= 1
-                        if i < end:
-                            break
+                        if i < end, break
             elif len(argument) == 2:
                 try:
                     ids = [int(int(argument[1]) / abs(client.db_channel.id))]
@@ -95,13 +94,13 @@ async def start_command(client: Client, message: Message):
             buttons = []
 
             # Check if user is subscribed to each channel, only show the button for unsubscribed channels
-            if not await subscribed(client, message, channel_url=client.invitelink2):
+            if not await subscribed(client, message):
                 buttons.append([InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink2)])
 
-            if not await subscribed(client, message, channel_url=client.invitelink3):
+            if not await subscribed(client, message):
                 buttons.append([InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink3)])
 
-            if not await subscribed(client, message, channel_url=client.invitelink):
+            if not await subscribed(client, message):
                 buttons.append([InlineKeyboardButton(text=" 🟢 Join Channel ", url=client.invitelink)])
 
             # Add the Try Again button
