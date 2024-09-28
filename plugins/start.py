@@ -42,20 +42,20 @@ async def start_command(client: Client, message: Message):
         not_subscribed = False
 
         if not await is_subscribed(client, message.from_user.id, client.invitelink):
-            unsubscribed_buttons.append([InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink)])
+            unsubscribed_buttons.append([InlineKeyboardButton(text="🔴 Join Channel 1", url=client.invitelink)])
             not_subscribed = True
 
         if not await is_subscribed(client, message.from_user.id, client.invitelink2):
-            unsubscribed_buttons.append([InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink2)])
+            unsubscribed_buttons.append([InlineKeyboardButton(text="🔵 Join Channel 2", url=client.invitelink2)])
             not_subscribed = True
 
         if not await is_subscribed(client, message.from_user.id, client.invitelink3):
-            unsubscribed_buttons.append([InlineKeyboardButton(text=" 🟢 Join Channel ", url=client.invitelink3)])
+            unsubscribed_buttons.append([InlineKeyboardButton(text="🟢 Join Channel 3", url=client.invitelink3)])
             not_subscribed = True
 
         # If the user is not subscribed to all channels, show the join buttons
         if not_subscribed:
-            unsubscribed_buttons.append([InlineKeyboardButton(text=' 🔄 Try Again ', url=f"https://t.me/{client.username}?start={message.command[1]}")])
+            unsubscribed_buttons.append([InlineKeyboardButton(text='🔄 Try Again', url=f"https://t.me/{client.username}?start={message.command[1]}")])
             await message.reply(
                 text=FORCE_MSG.format(
                     first=message.from_user.first_name,
@@ -92,11 +92,11 @@ async def start_command(client: Client, message: Message):
                 ids = [int(int(argument[1]) / abs(client.db_channel.id))]
             except:
                 return
-        temp_msg = await message.reply("ᴡᴀɪᴛ ʙʀᴏᴏ...")
+        temp_msg = await message.reply("Please wait...")
         try:
             messages = await get_messages(client, ids)
         except:
-            await message.reply_text("ɪ ꜰᴇᴇʟ ʟɪᴋᴇ ᴛʜᴇʀᴇ ɪꜱ ꜱᴏᴍᴇᴛʜɪɴɢ ᴡʀᴏɴɢ..!")
+            await message.reply_text("Something went wrong.")
             return
         await temp_msg.delete()
 
@@ -130,8 +130,8 @@ async def start_command(client: Client, message: Message):
         reply_markup = InlineKeyboardMarkup(
             [
                 [
-                    InlineKeyboardButton("💠 About ", callback_data="about"),
-                    InlineKeyboardButton('🔒 Close ', callback_data="close")
+                    InlineKeyboardButton("💠 About", callback_data="about"),
+                    InlineKeyboardButton('🔒 Close', callback_data="close")
                 ]
             ]
         )
@@ -152,7 +152,7 @@ async def start_command(client: Client, message: Message):
 
 # ============================================================================================================##
 
-WAIT_MSG = "<b>ᴡᴏʀᴋɪɴɢ....</b>"
+WAIT_MSG = "<b>Working...</b>"
 
 REPLY_ERROR = "<code>Use this command as a reply to any telegram message without any spaces.</code>"
 
@@ -163,7 +163,7 @@ REPLY_ERROR = "<code>Use this command as a reply to any telegram message without
 async def get_users(client: Bot, message: Message):
     msg = await client.send_message(chat_id=message.chat.id, text=WAIT_MSG)
     users = await full_userbase()
-    await msg.edit(f"{len(users)} ᴜꜱᴇʀꜱ ᴀʀᴇ ᴜꜱɪɴɢ ᴛʜɪꜱ ʙᴏᴛ")
+    await msg.edit(f"{len(users)} users are using this bot.")
 
 
 @Bot.on_message(filters.private & filters.command('broadcast') & filters.user(ADMINS))
@@ -197,13 +197,13 @@ async def send_text(client: Bot, message: Message):
                 pass
             total += 1
 
-        status = f"""Broadcast completed my senpai!!
+        status = f"""Broadcast completed!
 
-Total users: <code>{total}</code>
-Successful: <code>{successful}</code>
-Blocked users: <code>{blocked}</code>
-Deleted accounts: <code>{deleted}</code>
-Unsuccessful: <code>{unsuccessful}</code>"""
+Total users: {total}
+Successful: {successful}
+Blocked users: {blocked}
+Deleted accounts: {deleted}
+Unsuccessful: {unsuccessful}"""
 
         return await pls_wait.edit(status)
 
