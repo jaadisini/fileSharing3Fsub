@@ -194,13 +194,13 @@ async def send_text(client: Bot, message: Message):
                 pass
             total += 1
 
-        status = f"""<b><u>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ ᴍʏ sᴇɴᴘᴀɪ!!</u>
+        status = f"""Broadcast completed my senpai!!
 
-        ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ: <code>{total}</code>
-        ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ: <code>{successful}</code>
-        ʙʟᴏᴄᴋᴇᴅ ᴜꜱᴇʀꜱ: <code>{blocked}</code>
-        ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛꜱ: <code>{deleted}</code>
-        ᴜɴꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ: <code>{unsuccessful}</code></b></b>"""
+Total users: <code>{total}</code>
+Successful: <code>{successful}</code>
+Blocked users: <code>{blocked}</code>
+Deleted accounts: <code>{deleted}</code>
+Unsuccessful: <code>{unsuccessful}</code>"""
 
         return await pls_wait.edit(status)
 
