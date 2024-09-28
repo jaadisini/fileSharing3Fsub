@@ -1,5 +1,5 @@
-#(©)Codexbotz
-#Recoded By @Codeflix_Bots
+# (©)Codexbotz
+# Recoded By @Codeflix_Bots
 
 import base64
 import re
@@ -10,16 +10,18 @@ from config import FORCESUB_CHANNEL, FORCESUB_CHANNEL2, FORCESUB_CHANNEL3, ADMIN
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait
 
-async def is_subscribed(filter, client, update):
+
+async def is_subscribed(client, update):
     if not (FORCESUB_CHANNEL or FORCESUB_CHANNEL2 or FORCESUB_CHANNEL3):
-        return True
+        return True, []
 
     user_id = update.from_user.id
 
     if user_id in ADMINS:
-        return True
+        return True, []
 
     member_status = ChatMemberStatus.OWNER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.MEMBER
+    unsubscribed_channels = []
 
     for channel_id in [FORCESUB_CHANNEL, FORCESUB_CHANNEL2, FORCESUB_CHANNEL3]:
         if not channel_id:
@@ -28,18 +30,21 @@ async def is_subscribed(filter, client, update):
         try:
             member = await client.get_chat_member(chat_id=channel_id, user_id=user_id)
         except UserNotParticipant:
-            return False
+            unsubscribed_channels.append(channel_id)
+            continue
 
         if member.status not in member_status:
-            return False
+            unsubscribed_channels.append(channel_id)
 
-    return True
+    return len(unsubscribed_channels) == 0, unsubscribed_channels
+
 
 async def encode(string):
     string_bytes = string.encode("ascii")
     base64_bytes = base64.urlsafe_b64encode(string_bytes)
     base64_string = (base64_bytes.decode("ascii")).strip("=")
     return base64_string
+
 
 async def decode(base64_string):
     base64_string = base64_string.strip("=")
@@ -48,11 +53,12 @@ async def decode(base64_string):
     string = string_bytes.decode("ascii")
     return string
 
+
 async def get_messages(client, message_ids):
     messages = []
     total_messages = 0
     while total_messages != len(message_ids):
-        temb_ids = message_ids[total_messages:total_messages+200]
+        temb_ids = message_ids[total_messages:total_messages + 200]
         try:
             msgs = await client.get_messages(
                 chat_id=client.db_channel.id,
@@ -69,6 +75,7 @@ async def get_messages(client, message_ids):
         total_messages += len(temb_ids)
         messages.extend(msgs)
     return messages
+
 
 async def get_message_id(client, message):
     if message.forward_from_chat:
@@ -94,6 +101,7 @@ async def get_message_id(client, message):
     else:
         return 0
 
+
 def get_readable_time(seconds: int) -> str:
     count = 0
     up_time = ""
@@ -114,5 +122,6 @@ def get_readable_time(seconds: int) -> str:
     time_list.reverse()
     up_time += ":".join(time_list)
     return up_time
+
 
 subscribed = filters.create(is_subscribed)
