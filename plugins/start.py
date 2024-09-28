@@ -12,11 +12,15 @@ from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL
 from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
 
-async def is_subscribed(client, user_id, channel_id):
+# Function to check if the user is subscribed to a channel
+async def is_subscribed(client, user_id, channel_url):
     try:
-        member = await client.get_chat_member(channel_id, user_id)
+        # Fetch channel info
+        chat = await client.get_chat(channel_url)
+        member = await client.get_chat_member(chat.id, user_id)
         return member.status in ["member", "administrator", "creator"]
-    except Exception:
+    except Exception as e:
+        print(f"Error checking subscription: {e}")
         return False
 
 
