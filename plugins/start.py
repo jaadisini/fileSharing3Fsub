@@ -1,4 +1,5 @@
-# (©)Codeflix_Bots
+# (©)CodeXBotz
+# By @Codeflix_Bots
 
 import os
 import asyncio
@@ -9,7 +10,7 @@ from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 
 from bot import Bot
 from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT
-from helper_func import subscribed, encode, decode, get_messages
+from helper_func import is_subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
 
 
@@ -35,7 +36,7 @@ async def start_command(client: Client, message: Message):
         argument = string.split("-")
 
         # If subscribed, give access to files
-        if await subscribed(client, message):
+        if await is_subscribed(client, message):
             if len(argument) == 3:
                 try:
                     start = int(int(argument[1]) / abs(client.db_channel.id))
@@ -95,13 +96,13 @@ async def start_command(client: Client, message: Message):
             buttons = []
 
             # Check if user is subscribed to each channel, only show the button for unsubscribed channels
-            if not await subscribed(client, message, client.invitelink2):
+            if not await is_subscribed(client, message, client.invitelink2):
                 buttons.append([InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink2)])
 
-            if not await subscribed(client, message, client.invitelink3):
+            if not await is_subscribed(client, message, client.invitelink3):
                 buttons.append([InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink3)])
 
-            if not await subscribed(client, message, client.invitelink):
+            if not await is_subscribed(client, message, client.invitelink):
                 buttons.append([InlineKeyboardButton(text=" 🟢 Join Channel ", url=client.invitelink)])
 
             # Add the Try Again button
