@@ -9,7 +9,7 @@ from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 
 from bot import Bot
 from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT
-from helper_func import is_subscribed, encode, decode, get_messages
+from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
 
 
@@ -34,11 +34,11 @@ async def start_command(client: Client, message: Message):
         string = await decode(base64_string)
         argument = string.split("-")
 
-        # Check subscription status and get unsubscribed channels
-        subscribed_status, unsubscribed_channels = await is_subscribed(client, message)
+        # Check subscription status
+        is_sub, unsubscribed_channels = await subscribed(client, message)
 
-        if subscribed_status:
-            # User is subscribed to all channels, give access to files
+        # If subscribed, give access to files
+        if is_sub:
             if len(argument) == 3:
                 try:
                     start = int(int(argument[1]) / abs(client.db_channel.id))
@@ -60,7 +60,6 @@ async def start_command(client: Client, message: Message):
                     ids = [int(int(argument[1]) / abs(client.db_channel.id))]
                 except:
                     return
-
             temp_msg = await message.reply("ᴡᴀɪᴛ ʙʀᴏᴏ...")
             try:
                 messages = await get_messages(client, ids)
@@ -95,21 +94,19 @@ async def start_command(client: Client, message: Message):
                     pass
             return
         else:
-            # If not subscribed, send force-join message and show only unsubscribed channels
+            # If not subscribed, send force-join message and show only the buttons for channels they haven’t joined
             buttons = []
-
-            channels = {
-                client.invitelink2: "🔴 Join Channel",
-                client.invitelink3: "🔵 Join Channel",
-                client.invitelink: "🟢 Join Channel"
-            }
-
-            # Add buttons for channels they haven't subscribed to
-            for channel in unsubscribed_channels:
-                buttons.append([InlineKeyboardButton(text=channels[channel], url=f"https://t.me/{channel}")])
+            if FORCE_MSG and unsubscribed_channels:
+                for channel_id in unsubscribed_channels:
+                    if channel_id == FORCE_MSG['channel_1']:
+                        buttons.append([InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink2)])
+                    elif channel_id == FORCE_MSG['channel_2']:
+                        buttons.append([InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink3)])
+                    elif channel_id == FORCE_MSG['channel_3']:
+                        buttons.append([InlineKeyboardButton(text=" 🟢 Join Channel ", url=client.invitelink)])
 
             # Add the Try Again button
-            buttons.append([InlineKeyboardButton(text='🔄 Try Again', url=f"https://t.me/{client.username}?start={message.command[1]}")])
+            buttons.append([InlineKeyboardButton(text=' 🔄 Try Again ', url=f"https://t.me/{client.username}?start={message.command[1]}")])
 
             await message.reply(
                 text=FORCE_MSG.format(
