@@ -174,7 +174,7 @@ async def send_text(client: Bot, message: Message):
         deleted = 0
         unsuccessful = 0
 
-        pls_wait = await message.reply("<i>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴘʀᴏᴄᴇꜱꜱɪɴɢ ᴛɪʟʟ ᴡᴀɪᴛ ʙʀᴏᴏ... </i>")
+        pls_wait = await message.reply("<i>Broadcast in progress, please wait...</i>")
         for chat_id in query:
             try:
                 await broadcast_msg.copy(chat_id)
