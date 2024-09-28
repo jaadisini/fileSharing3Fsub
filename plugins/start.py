@@ -35,11 +35,8 @@ async def start_command(client: Client, message: Message):
         string = await decode(base64_string)
         argument = string.split("-")
 
-        # Check if the user is subscribed to required channels
-        unsubscribed_channels = await is_subscribed(client, message.from_user.id)
-
-        if not unsubscribed_channels:  # If no channels left to subscribe
-            # User is subscribed, allow access to the files
+        # If subscribed, give access to files
+        if await is_subscribed(client, message.from_user.id):
             if len(argument) == 3:
                 try:
                     start = int(int(argument[1]) / abs(client.db_channel.id))
@@ -95,21 +92,21 @@ async def start_command(client: Client, message: Message):
                     pass
             return
         else:
-            # User is not subscribed, show force-join message with buttons for unsubscribed channels
+            # If not subscribed, send force-join message and show only the buttons for channels they haven’t joined
             buttons = []
 
-            # Check each channel and add a button only for unsubscribed channels
+            # Check if user is subscribed to each channel, only show the button for unsubscribed channels
             if not await is_subscribed(client, message.from_user.id, client.invitelink2):
-                buttons.append([InlineKeyboardButton(text="🔴 Join Channel 1", url=client.invitelink2)])
+                buttons.append([InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink2)])
 
             if not await is_subscribed(client, message.from_user.id, client.invitelink3):
-                buttons.append([InlineKeyboardButton(text="🔵 Join Channel 2", url=client.invitelink3)])
+                buttons.append([InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink3)])
 
             if not await is_subscribed(client, message.from_user.id, client.invitelink):
-                buttons.append([InlineKeyboardButton(text="🟢 Join Channel 3", url=client.invitelink)])
+                buttons.append([InlineKeyboardButton(text=" 🟢 Join Channel ", url=client.invitelink)])
 
             # Add the Try Again button
-            buttons.append([InlineKeyboardButton(text='🔄 Try Again', url=f"https://t.me/{client.username}?start={message.command[1]}")])
+            buttons.append([InlineKeyboardButton(text=' 🔄 Try Again ', url=f"https://t.me/{client.username}?start={message.command[1]}")])
 
             await message.reply(
                 text=FORCE_MSG.format(
