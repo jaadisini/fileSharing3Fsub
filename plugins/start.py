@@ -1,4 +1,4 @@
-# (©)CodeXBotz
+(©)CodeXBotz
 # Recoded By @Codeflix_Bots
 
 import os
@@ -144,7 +144,6 @@ async def start_command(client: Client, message: Message):
             quote=True
         )
         return
-
 
 # ============================================================================================================##
 
