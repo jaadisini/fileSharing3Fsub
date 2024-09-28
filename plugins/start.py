@@ -9,8 +9,20 @@ from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 
 from bot import Bot
 from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT
-from helper_func import subscribed, encode, decode, get_messages
+from helper_func import encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
+
+
+# Function to check if the user is subscribed to a specific channel
+async def is_subscribed(client, user_id, channel_username):
+    try:
+        user = await client.get_chat_member(channel_username, user_id)
+        if user.status in ['member', 'administrator', 'creator']:
+            return True
+        else:
+            return False
+    except Exception:
+        return False
 
 
 @Bot.on_message(filters.command('start') & filters.private)
@@ -35,7 +47,7 @@ async def start_command(client: Client, message: Message):
         argument = string.split("-")
 
         # If subscribed, give access to files
-        if await subscribed(client, message):
+        if await is_subscribed(client, message.from_user.id, client.invitelink2):
             if len(argument) == 3:
                 try:
                     start = int(int(argument[1]) / abs(client.db_channel.id))
@@ -95,17 +107,18 @@ async def start_command(client: Client, message: Message):
             buttons = []
 
             # Check if user is subscribed to each channel, only show the button for unsubscribed channels
-            if not await subscribed(client, message):
+            if not await is_subscribed(client, message.from_user.id, client.invitelink2):
                 buttons.append([InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink2)])
 
-            if not await subscribed(client, message):
+            if not await is_subscribed(client, message.from_user.id, client.invitelink3):
                 buttons.append([InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink3)])
 
-            if not await subscribed(client, message):
+            if not await is_subscribed(client, message.from_user.id, client.invitelink):
                 buttons.append([InlineKeyboardButton(text=" 🟢 Join Channel ", url=client.invitelink)])
 
-            # Add the Try Again button
-            buttons.append([InlineKeyboardButton(text=' 🔄 Try Again ', url=f"https://t.me/{client.username}?start={message.command[1]}")])
+            # Add the Try Again button if any buttons were added
+            if buttons:
+                buttons.append([InlineKeyboardButton(text=' 🔄 Try Again ', url=f"https://t.me/{client.username}?start={message.command[1]}")])
 
             await message.reply(
                 text=FORCE_MSG.format(
