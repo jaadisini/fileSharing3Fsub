@@ -96,8 +96,8 @@ async def start_command(client: Client, message: Message):
             buttons = []
 
             # Check if user is subscribed to each channel, only show the button for unsubscribed channels
-            if not await subscribed(client, message, client.invitelink2):
-                buttons.append([InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink2)])
+            if not await is_subscribed(client, message.from_user.id):
+    buttons.append([InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink2)])
 
             if not await subscribed(client, message, client.invitelink3):
                 buttons.append([InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink3)])
