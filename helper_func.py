@@ -1,4 +1,4 @@
-#(©)CodeXBotz @Codeflix_Bots
+# (©)CodeXBotz @Codeflix_Bots
 
 import base64
 import re
