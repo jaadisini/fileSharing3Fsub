@@ -94,13 +94,13 @@ async def start_command(client: Client, message: Message):
             # If not subscribed, send force-join message
             buttons = [
                 [
-                    InlineKeyboardButton(text="• 🔴 Join Channel ", url=client.invitelink2),
+                    InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink2),
                 ],
                 [
                     InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink3),
                 ],
                 [
-                    InlineKeyboardButton(text="• 🟢 Join Channel ", url=client.invitelink),
+                    InlineKeyboardButton(text=" 🟢 Join Channel ", url=client.invitelink),
                 ],
                 [
                     InlineKeyboardButton(
