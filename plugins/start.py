@@ -94,13 +94,14 @@ async def start_command(client: Client, message: Message):
             # If not subscribed, send force-join message and show only the buttons for channels they haven’t joined
             buttons = []
 
-            if not await subscribed(client, message):
+            # Check if user is subscribed to each channel, only show the button for unsubscribed channels
+            if not await subscribed(client, message, channel_url=client.invitelink2):
                 buttons.append([InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink2)])
 
-            if not await subscribed(client, message):
+            if not await subscribed(client, message, channel_url=client.invitelink3):
                 buttons.append([InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink3)])
 
-            if not await subscribed(client, message):
+            if not await subscribed(client, message, channel_url=client.invitelink):
                 buttons.append([InlineKeyboardButton(text=" 🟢 Join Channel ", url=client.invitelink)])
 
             # Add the Try Again button
