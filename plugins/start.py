@@ -35,35 +35,44 @@ async def start_command(client: Client, message: Message):
         string = await decode(base64_string)
         argument = string.split("-")
 
-        # Check subscription status for each channel
-        unsubscribed_buttons = []
+       # Check subscription status for each channel
+unsubscribed_buttons = []
 
-        # Check for each channel and add join button if not subscribed
-        if not await is_subscribed(client, message.from_user.id, client.invitelink):
-            unsubscribed_buttons.append([InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink)])
+# Check and ensure the invite link for each channel is valid
+if client.invitelink:
+    if not await is_subscribed(client, message.from_user.id, client.invitelink):
+        unsubscribed_buttons.append([InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink)])
+else:
+    await message.reply("❌ Invalid invite link for channel 1")
 
-        if not await is_subscribed(client, message.from_user.id, client.invitelink2):
-            unsubscribed_buttons.append([InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink2)])
+if client.invitelink2:
+    if not await is_subscribed(client, message.from_user.id, client.invitelink2):
+        unsubscribed_buttons.append([InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink2)])
+else:
+    await message.reply("❌ Invalid invite link for channel 2")
 
-        if not await is_subscribed(client, message.from_user.id, client.invitelink3):
-            unsubscribed_buttons.append([InlineKeyboardButton(text=" 🟢 Join Channel ", url=client.invitelink3)])
+if client.invitelink3:
+    if not await is_subscribed(client, message.from_user.id, client.invitelink3):
+        unsubscribed_buttons.append([InlineKeyboardButton(text=" 🟢 Join Channel ", url=client.invitelink3)])
+else:
+    await message.reply("❌ Invalid invite link for channel 3")
 
-        # If user is not subscribed to one or more channels
-        if unsubscribed_buttons:
-            unsubscribed_buttons.append([InlineKeyboardButton(text=' 🔄 Try Again ', url=f"https://t.me/{client.username}?start={message.command[1]}")])
-            await message.reply(
-                text=FORCE_MSG.format(
-                    first=message.from_user.first_name,
-                    last=message.from_user.last_name,
-                    username=None if not message.from_user.username else '@' + message.from_user.username,
-                    mention=message.from_user.mention,
-                    id=message.from_user.id
-                ),
-                reply_markup=InlineKeyboardMarkup(unsubscribed_buttons),
-                quote=True,
-                disable_web_page_preview=True
-            )
-            return
+# If the user is not subscribed to one or more channels, show the join buttons
+if unsubscribed_buttons:
+    unsubscribed_buttons.append([InlineKeyboardButton(text=' 🔄 Try Again ', url=f"https://t.me/{client.username}?start={message.command[1]}")])
+    await message.reply(
+        text=FORCE_MSG.format(
+            first=message.from_user.first_name,
+            last=message.from_user.last_name,
+            username=None if not message.from_user.username else '@' + message.from_user.username,
+            mention=message.from_user.mention,
+            id=message.from_user.id
+        ),
+        reply_markup=InlineKeyboardMarkup(unsubscribed_buttons),
+        quote=True,
+        disable_web_page_preview=True
+    )
+    return
 
         # If subscribed to all channels, give access to files
         if len(argument) == 3:
