@@ -1,15 +1,21 @@
-from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from config import START_MSG, FORCE_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT
+# (©)Codeflix_Bots
+
+import os
+import asyncio
+from pyrogram import Client, filters, __version__
+from pyrogram.enums import ParseMode
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
+
+from bot import Bot
+from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT
 from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
 
 
-@Client.on_message(filters.command('start') & filters.private)
-async def start_command(client: Client, message):
+@Bot.on_message(filters.command('start') & filters.private)
+async def start_command(client: Client, message: Message):
     id = message.from_user.id
-
-    # Add user to the database if not already present
     if not await present_user(id):
         try:
             await add_user(id)
@@ -17,7 +23,6 @@ async def start_command(client: Client, message):
             pass
 
     text = message.text
-
     # If the user started the bot with an encoded link
     if len(text) > 7:
         try:
@@ -29,70 +34,92 @@ async def start_command(client: Client, message):
         string = await decode(base64_string)
         argument = string.split("-")
 
-        # Check if the user is subscribed to required channels
-        subscribed_channels = []
-        for channel_id in [client.invitelink2, client.invitelink3, client.invitelink]:
-            if not await subscribed(client, message, channel_id):
-                subscribed_channels.append(channel_id)
-
-        # If user is not subscribed to any required channels, show force-join message
-        if subscribed_channels:
-            buttons = []
-            for channel_id in subscribed_channels:
-                if channel_id == client.invitelink2:
-                    buttons.append([InlineKeyboardButton("🔴 Join Channel", url=channel_id)])
-                elif channel_id == client.invitelink3:
-                    buttons.append([InlineKeyboardButton("🔵 Join Channel", url=channel_id)])
+        # If subscribed, give access to files
+        if await subscribed(client, message):
+            if len(argument) == 3:
+                try:
+                    start = int(int(argument[1]) / abs(client.db_channel.id))
+                    end = int(int(argument[2]) / abs(client.db_channel.id))
+                except:
+                    return
+                if start <= end:
+                    ids = range(start, end + 1)
                 else:
-                    buttons.append([InlineKeyboardButton("🟢 Join Channel", url=channel_id)])
+                    ids = []
+                    i = start
+                    while True:
+                        ids.append(i)
+                        i -= 1
+                        if i < end:
+                            break
+            elif len(argument) == 2:
+                try:
+                    ids = [int(int(argument[1]) / abs(client.db_channel.id))]
+                except:
+                    return
+            temp_msg = await message.reply("ᴡᴀɪᴛ ʙʀᴏᴏ...")
+            try:
+                messages = await get_messages(client, ids)
+            except:
+                await message.reply_text("ɪ ꜰᴇᴇʟ ʟɪᴋᴇ ᴛʜᴇʀᴇ ɪꜱ ꜱᴏᴍᴇᴛʜɪɴɢ ᴡʀᴏɴɢ..!")
+                return
+            await temp_msg.delete()
 
-            # Add Try Again button
-            buttons.append([InlineKeyboardButton("🔄 Try Again", url=f"https://t.me/{client.username}?start={message.command[1]}")])
+            for msg in messages:
+                if bool(CUSTOM_CAPTION) & bool(msg.document):
+                    caption = CUSTOM_CAPTION.format(
+                        previouscaption="" if not msg.caption else msg.caption.html,
+                        filename=msg.document.file_name
+                    )
+                else:
+                    caption = "" if not msg.caption else msg.caption.html
+
+                if DISABLE_CHANNEL_BUTTON:
+                    reply_markup = msg.reply_markup
+                else:
+                    reply_markup = None
+
+                try:
+                    await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML,
+                                   reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
+                    await asyncio.sleep(0.5)
+                except FloodWait as e:
+                    await asyncio.sleep(e.x)
+                    await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML,
+                                   reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
+                except:
+                    pass
+            return
+        else:
+            # If not subscribed, send force-join message and show only the buttons for channels they haven’t joined
+            buttons = []
+
+            # Check if user is subscribed to each channel, only show the button for unsubscribed channels
+            if not await subscribed(client, message, client.invitelink2):
+                buttons.append([InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink2)])
+
+            if not await subscribed(client, message, client.invitelink3):
+                buttons.append([InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink3)])
+
+            if not await subscribed(client, message, client.invitelink):
+                buttons.append([InlineKeyboardButton(text=" 🟢 Join Channel ", url=client.invitelink)])
+
+            # Add the Try Again button
+            buttons.append([InlineKeyboardButton(text=' 🔄 Try Again ', url=f"https://t.me/{client.username}?start={message.command[1]}")])
 
             await message.reply(
                 text=FORCE_MSG.format(
                     first=message.from_user.first_name,
                     last=message.from_user.last_name,
-                    username=message.from_user.username,
+                    username=None if not message.from_user.username else '@' + message.from_user.username,
                     mention=message.from_user.mention,
                     id=message.from_user.id
                 ),
                 reply_markup=InlineKeyboardMarkup(buttons),
+                quote=True,
                 disable_web_page_preview=True
             )
             return
-
-        # If subscribed, give access to files
-        if len(argument) == 3:
-            try:
-                start = int(int(argument[1]) / abs(client.db_channel.id))
-                end = int(int(argument[2]) / abs(client.db_channel.id))
-            except:
-                return
-            ids = range(start, end + 1)
-        elif len(argument) == 2:
-            try:
-                ids = [int(int(argument[1]) / abs(client.db_channel.id))]
-            except:
-                return
-
-        temp_msg = await message.reply("ᴡᴀɪᴛ ʙʀᴏᴏ...")
-        try:
-            messages = await get_messages(client, ids)
-        except:
-            await message.reply_text("There seems to be an issue.")
-            return
-        await temp_msg.delete()
-
-        for msg in messages:
-            caption = msg.caption.html if msg.caption else ""
-            reply_markup = msg.reply_markup if not DISABLE_CHANNEL_BUTTON else None
-
-            try:
-                await msg.copy(chat_id=message.from_user.id, caption=caption, reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
-            except:
-                pass
-        return
     else:
         # Regular start message if the user has not used a special link
         reply_markup = InlineKeyboardMarkup(
@@ -127,14 +154,14 @@ REPLY_ERROR = "<code>Use this command as a reply to any telegram message without
 # ============================================================================================================##
 
 
-@Client.on_message(filters.command('users') & filters.private & filters.user(ADMINS))
+@Bot.on_message(filters.command('users') & filters.private & filters.user(ADMINS))
 async def get_users(client: Bot, message: Message):
     msg = await client.send_message(chat_id=message.chat.id, text=WAIT_MSG)
     users = await full_userbase()
     await msg.edit(f"{len(users)} ᴜꜱᴇʀꜱ ᴀʀᴇ ᴜꜱɪɴɢ ᴛʜɪꜱ ʙᴏᴛ")
 
 
-@Client.on_message(filters.private & filters.command('broadcast') & filters.user(ADMINS))
+@Bot.on_message(filters.private & filters.command('broadcast') & filters.user(ADMINS))
 async def send_text(client: Bot, message: Message):
     if message.reply_to_message:
         query = await full_userbase()
@@ -181,6 +208,6 @@ Unsuccessful: <code>{unsuccessful}</code>"""
         await msg.delete()
 
 
-@Client.on_callback_query(filters.regex('close'))
+@Bot.on_callback_query(filters.regex('close'))
 async def close_button(client: Client, callback_query: CallbackQuery):
     await callback_query.message.delete()
