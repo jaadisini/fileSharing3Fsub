@@ -1,4 +1,4 @@
-# (©)Codeflix_Bots
+# (©)CodeXBotz @Codeflix_Bots
 
 import os
 import asyncio
@@ -36,18 +36,19 @@ async def start_command(client: Client, message: Message):
 
         # Check subscription status for each channel
         unsubscribed_buttons = []
-        not_subscribed = False
 
         # Check if the user is subscribed to each channel
-        if not await is_subscribed(client, message.from_user.id, client.invitelink):
+        not_subscribed = False
+
+        if not await is_subscribed(client, message.from_user.id, FORCESUB_CHANNEL):
             unsubscribed_buttons.append([InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink)])
             not_subscribed = True
 
-        if not await is_subscribed(client, message.from_user.id, client.invitelink2):
+        if not await is_subscribed(client, message.from_user.id, FORCESUB_CHANNEL2):
             unsubscribed_buttons.append([InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink2)])
             not_subscribed = True
 
-        if not await is_subscribed(client, message.from_user.id, client.invitelink3):
+        if not await is_subscribed(client, message.from_user.id, FORCESUB_CHANNEL3):
             unsubscribed_buttons.append([InlineKeyboardButton(text=" 🟢 Join Channel ", url=client.invitelink3)])
             not_subscribed = True
 
@@ -90,11 +91,11 @@ async def start_command(client: Client, message: Message):
                 ids = [int(int(argument[1]) / abs(client.db_channel.id))]
             except:
                 return
-        temp_msg = await message.reply("Wait a moment...")
+        temp_msg = await message.reply("ᴡᴀɪᴛ ʙʀᴏᴏ...")
         try:
             messages = await get_messages(client, ids)
         except:
-            await message.reply_text("Something went wrong!")
+            await message.reply_text("ɪ ꜰᴇᴇʟ ʟɪᴋᴇ ᴛʜᴇʀᴇ ɪꜱ ꜱᴏᴍᴇᴛʜɪɴɢ ᴡʀᴏɴɢ..!")
             return
         await temp_msg.delete()
 
@@ -128,7 +129,7 @@ async def start_command(client: Client, message: Message):
         reply_markup = InlineKeyboardMarkup(
             [
                 [
-                    InlineKeyboardButton("💠 About", callback_data="about"),
+                    InlineKeyboardButton("⚡️ About", callback_data="about"),
                     InlineKeyboardButton('🔒 Close', callback_data="close")
                 ]
             ]
