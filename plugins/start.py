@@ -195,9 +195,4 @@ async def send_text(client: Bot, message: Message):
         ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛꜱ: <code>{deleted}</code>
         ᴜɴꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ: <code>{unsuccessful}</code></b></b>"""
 
-        return await pls_wait.edit(status)
-
-    else:
-        msg = await message.reply("<code>Reply to a message to broadcast.</code>")
-        await asyncio.sleep(8)
-        await msg.delete()
+        return await pls_wait.edit
