@@ -1,5 +1,5 @@
-#(©)Codexbotz
-#Recoded By @Codeflix_Bots
+# (©)Codexbotz
+# Recoded By @Codeflix_Bots
 
 import base64
 import re
@@ -10,43 +10,29 @@ from config import FORCESUB_CHANNEL, FORCESUB_CHANNEL2, FORCESUB_CHANNEL3, ADMIN
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait
 
-# Subscription check for all channels
-async def is_subscribed(filter, client, update):
-    # If no force sub channels are set, allow access
-    if not (FORCESUB_CHANNEL or FORCESUB_CHANNEL2 or FORCESUB_CHANNEL3):
+async def is_subscribed(client, user_id, channel_id):
+    # If no force sub is enabled or the user is an admin, skip the check
+    if not channel_id or user_id in ADMINS:
         return True
 
-    user_id = update.from_user.id
+    try:
+        member = await client.get_chat_member(chat_id=channel_id, user_id=user_id)
+        if member.status in [ChatMemberStatus.OWNER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.MEMBER]:
+            return True
+    except UserNotParticipant:
+        return False
+    return False
 
-    # Admins can bypass the subscription check
-    if user_id in ADMINS:
-        return True
 
-    member_status = (ChatMemberStatus.OWNER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.MEMBER)
-
-    # Check all channels in force subscription
-    for channel_id in [FORCESUB_CHANNEL, FORCESUB_CHANNEL2, FORCESUB_CHANNEL3]:
-        if not channel_id:
-            continue
-
-        try:
-            member = await client.get_chat_member(chat_id=channel_id, user_id=user_id)
-        except UserNotParticipant:
-            return False
-
-        if member.status not in member_status:
-            return False
-
-    return True
-
-# Base64 encoding
+# Helper function for encoding base64
 async def encode(string):
     string_bytes = string.encode("ascii")
     base64_bytes = base64.urlsafe_b64encode(string_bytes)
     base64_string = (base64_bytes.decode("ascii")).strip("=")
     return base64_string
 
-# Base64 decoding
+
+# Helper function for decoding base64
 async def decode(base64_string):
     base64_string = base64_string.strip("=")
     base64_bytes = (base64_string + "=" * (-len(base64_string) % 4)).encode("ascii")
@@ -54,12 +40,13 @@ async def decode(base64_string):
     string = string_bytes.decode("ascii")
     return string
 
-# Retrieve messages from the channel
+
+# Function to retrieve messages from the channel
 async def get_messages(client, message_ids):
     messages = []
     total_messages = 0
     while total_messages != len(message_ids):
-        temp_ids = message_ids[total_messages:total_messages + 200]
+        temp_ids = message_ids[total_messages:total_messages+200]
         try:
             msgs = await client.get_messages(
                 chat_id=client.db_channel.id,
@@ -77,7 +64,8 @@ async def get_messages(client, message_ids):
         messages.extend(msgs)
     return messages
 
-# Get message ID based on forwarded message or link
+
+# Function to retrieve message ID based on the forwarded message or link
 async def get_message_id(client, message):
     if message.forward_from_chat:
         if message.forward_from_chat.id == client.db_channel.id:
@@ -102,7 +90,8 @@ async def get_message_id(client, message):
     else:
         return 0
 
-# Convert seconds to a readable time format
+
+# Helper function to calculate readable time
 def get_readable_time(seconds: int) -> str:
     count = 0
     up_time = ""
@@ -124,5 +113,6 @@ def get_readable_time(seconds: int) -> str:
     up_time += ":".join(time_list)
     return up_time
 
-# Subscribed filter
+
+# Apply the subscribed filter
 subscribed = filters.create(is_subscribed)
