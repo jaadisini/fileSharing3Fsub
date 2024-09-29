@@ -21,7 +21,7 @@ async def start_command(client: Client, message: Message):
             await add_user(id)
         except:
             pass
-    
+
     text = message.text
     if len(text) > 7:
         # Handle content delivery when using an encoded link
@@ -166,7 +166,7 @@ async def send_text(client: Bot, message: Message):
         blocked = 0
         deleted = 0
         unsuccessful = 0
-        
+
         pls_wait = await message.reply("<i>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴘʀᴏᴄᴇꜱꜱɪɴɢ ᴛɪʟʟ ᴡᴀɪᴛ ʙʀᴏᴏ... </i>")
         for chat_id in query:
             try:
@@ -186,16 +186,18 @@ async def send_text(client: Bot, message: Message):
                 unsuccessful += 1
                 pass
             total += 1
-        
+
         status = f"""<b><u>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ ᴍʏ sᴇɴᴘᴀɪ!!</u>
 
-ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ: <code>{total}</code>
-ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ: <code>{successful}</code>
-ʙʟᴏᴄᴋᴇᴅ ᴜꜱᴇʀꜱ: <code>{blocked}</code>
-ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛꜱ: <code>{deleted}</code>
-ᴜɴꜱᴜᴄᴄᴇ거ғᴜʟ: <code>{unsuccessful}</code></b></b>"""
-        
+        ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ: <code>{total}</code>
+        ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ: <code>{successful}</code>
+        ʙʟᴏᴄᴋᴇᴅ ᴜꜱᴇʀꜱ: <code>{blocked}</code>
+        ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛꜱ: <code>{deleted}</code>
+        ᴜɴꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ: <code>{unsuccessful}</code></b></b>"""
+
         return await pls_wait.edit(status)
 
     else:
-        msg = await message
+        msg = await message.reply("<code>Reply to a message to broadcast.</code>")
+        await asyncio.sleep(8)
+        await msg.delete()
