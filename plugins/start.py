@@ -1,13 +1,9 @@
-#(©)Codeflix_Bots
-
-
-
 import os
 import asyncio
 from pyrogram import Client, filters, __version__
-from pyrogram.enums import ParseMode
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
+from pyrogram.enums import ParseMode, ChatMemberStatus
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.errors import FloodWait
 
 from bot import Bot
 from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT, FORCESUB_CHANNEL, FORCESUB_CHANNEL2, FORCESUB_CHANNEL3
@@ -19,13 +15,13 @@ from database.database import add_user, del_user, full_userbase, present_user
 async def start_command(client: Client, message: Message):
     user_id = message.from_user.id
 
-    # Check if user is already present in the database
+    # Check if the user is already present in the database
     if not await present_user(user_id):
         try:
             await add_user(user_id)
         except:
             pass
-    
+
     # List of channels the user needs to join
     channels_to_join = []
 
@@ -68,7 +64,7 @@ async def start_command(client: Client, message: Message):
         )
         return
 
-    # If user has joined all channels, proceed with normal process (send files or message)
+    # If the user has joined all channels, proceed with normal file/message delivery
     text = message.text
     if len(text) > 7:
         try:
@@ -86,7 +82,7 @@ async def start_command(client: Client, message: Message):
             except:
                 return
             if start <= end:
-                ids = range(start,end+1)
+                ids = range(start, end + 1)
             else:
                 ids = []
                 i = start
@@ -110,9 +106,9 @@ async def start_command(client: Client, message: Message):
         await temp_msg.delete()
 
         for msg in messages:
-
             if bool(CUSTOM_CAPTION) & bool(msg.document):
-                caption = CUSTOM_CAPTION.format(previouscaption = "" if not msg.caption else msg.caption.html, filename = msg.document.file_name)
+                caption = CUSTOM_CAPTION.format(previouscaption="" if not msg.caption else msg.caption.html,
+                                                filename=msg.document.file_name)
             else:
                 caption = "" if not msg.caption else msg.caption.html
 
@@ -151,100 +147,15 @@ async def start_command(client: Client, message: Message):
             disable_web_page_preview=True,
             quote=True
         )
-        return   
-
-
-#=====================================================================================##
-
-WAIT_MSG = "<b>ᴡᴏʀᴋɪɴɢ....</b>"
-
-REPLY_ERROR = "<code>Use this command as a reply to any telegram message without any spaces.</code>"
-
-#=====================================================================================##
-
-    
-    
-@Bot.on_message(filters.command('start') & filters.private)
-async def not_joined(client: Client, message: Message):
-   
- @Bot.on_message(filters.command('start') & filters.private)
-async def start_command(client: Client, message: Message):
-    user_id = message.from_user.id
-
-    # List of channels the user needs to join
-    channels_to_join = []
-    
-    # Check subscription for each channel individually
-    if not await client.get_chat_member(chat_id=FORCESUB_CHANNEL, user_id=user_id).status in [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-        channels_to_join.append(InlineKeyboardButton(text="Join Channel 1", url=client.invitelink))
-        
-    if not await client.get_chat_member(chat_id=FORCESUB_CHANNEL2, user_id=user_id).status in [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-        channels_to_join.append(InlineKeyboardButton(text="Join Channel 2", url=client.invitelink2))
-        
-    if not await client.get_chat_member(chat_id=FORCESUB_CHANNEL3, user_id=user_id).status in [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-        channels_to_join.append(InlineKeyboardButton(text="Join Channel 3", url=client.invitelink3))
-
-    # If user has not joined all channels, show the buttons for remaining channels
-    if channels_to_join:
-        buttons = [channels_to_join]
-        try:
-            buttons.append(
-                [
-                    InlineKeyboardButton(
-                        text = '• Now Click Here •',
-                        url = f"https://t.me/{client.username}?start={message.command[1]}"
-                    )
-                ]
-            )
-        except IndexError:
-            pass
-
-        await message.reply(
-            text = FORCE_MSG.format(
-                first = message.from_user.first_name,
-                last = message.from_user.last_name,
-                username = None if not message.from_user.username else '@' + message.from_user.username,
-                mention = message.from_user.mention,
-                id = message.from_user.id
-            ),
-            reply_markup = InlineKeyboardMarkup(buttons),
-            quote = True,
-            disable_web_page_preview = True
-        )
         return
 
-    # If user has joined all channels, send the requested file or message
-    await send_file_or_message_to_user(client, message)  # Your function to send the requested file/content
-    try:
-        buttons.append(
-            [
-                InlineKeyboardButton(
-                    text = '• ɴᴏᴡ ᴄʟɪᴄᴋ ʜᴇʀᴇ •',
-                    url = f"https://t.me/{client.username}?start={message.command[1]}"
-                )
-            ]
-        )
-    except IndexError:
-        pass
-
-    await message.reply(
-        text = FORCE_MSG.format(
-                first = message.from_user.first_name,
-                last = message.from_user.last_name,
-                username = None if not message.from_user.username else '@' + message.from_user.username,
-                mention = message.from_user.mention,
-                id = message.from_user.id
-            ),
-        reply_markup = InlineKeyboardMarkup(buttons),
-        quote = True,
-        disable_web_page_preview = True
-    )
 
 @Bot.on_message(filters.command('users') & filters.private & filters.user(ADMINS))
 async def get_users(client: Bot, message: Message):
     msg = await client.send_message(chat_id=message.chat.id, text=WAIT_MSG)
     users = await full_userbase()
     await msg.edit(f"{len(users)} ᴜꜱᴇʀꜱ ᴀʀᴇ ᴜꜱɪɴɢ ᴛʜɪꜱ ʙᴏᴛ")
+
 
 @Bot.on_message(filters.private & filters.command('broadcast') & filters.user(ADMINS))
 async def send_text(client: Bot, message: Message):
@@ -256,7 +167,7 @@ async def send_text(client: Bot, message: Message):
         blocked = 0
         deleted = 0
         unsuccessful = 0
-        
+
         pls_wait = await message.reply("<i>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴘʀᴏᴄᴇꜱꜱɪɴɢ ᴛɪʟʟ ᴡᴀɪᴛ ʙʀᴏᴏ... </i>")
         for chat_id in query:
             try:
@@ -276,7 +187,7 @@ async def send_text(client: Bot, message: Message):
                 unsuccessful += 1
                 pass
             total += 1
-        
+
         status = f"""<b><u>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ ᴍʏ sᴇɴᴘᴀɪ!!</u>
 
 ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ: <code>{total}</code>
@@ -284,7 +195,7 @@ async def send_text(client: Bot, message: Message):
 ʙʟᴏᴄᴋᴇᴅ ᴜꜱᴇʀꜱ: <code>{blocked}</code>
 ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛꜱ: <code>{deleted}</code>
 ᴜɴꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ: <code>{unsuccessful}</code></b></b>"""
-        
+
         return await pls_wait.edit(status)
 
     else:
