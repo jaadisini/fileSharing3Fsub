@@ -1,11 +1,11 @@
-# (©)CodeXBotz @Codeflix_Bots
+# (©)Codeflix_Bots
 
 import os
 import asyncio
 from pyrogram import Client, filters, __version__
 from pyrogram.enums import ParseMode
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
-from pyrogram.errors import FloodWait
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 
 from bot import Bot
 from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT
@@ -23,7 +23,7 @@ async def start_command(client: Client, message: Message):
             pass
 
     text = message.text
-    # If the user started the bot with an encoded link (special link)
+    # If the user started the bot with an encoded link
     if len(text) > 7:
         try:
             base64_string = text.split(" ", 1)[1]
@@ -36,25 +36,24 @@ async def start_command(client: Client, message: Message):
 
         # Check subscription status for each channel
         unsubscribed_buttons = []
-
-        # Check if the user is subscribed to each channel
         not_subscribed = False
 
+        # Check if the user is subscribed to each channel
         if not await is_subscribed(client, message.from_user.id, client.invitelink):
-            unsubscribed_buttons.append([InlineKeyboardButton(text="🔴 Join Channel", url=client.invitelink)])
+            unsubscribed_buttons.append([InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink)])
             not_subscribed = True
 
         if not await is_subscribed(client, message.from_user.id, client.invitelink2):
-            unsubscribed_buttons.append([InlineKeyboardButton(text="🔵 Join Channel", url=client.invitelink2)])
+            unsubscribed_buttons.append([InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink2)])
             not_subscribed = True
 
         if not await is_subscribed(client, message.from_user.id, client.invitelink3):
-            unsubscribed_buttons.append([InlineKeyboardButton(text="🟢 Join Channel", url=client.invitelink3)])
+            unsubscribed_buttons.append([InlineKeyboardButton(text=" 🟢 Join Channel ", url=client.invitelink3)])
             not_subscribed = True
 
         # If the user is not subscribed to all channels, show the join buttons
         if not_subscribed:
-            unsubscribed_buttons.append([InlineKeyboardButton(text='🔄 Try Again', url=f"https://t.me/{client.username}?start={message.command[1]}")])
+            unsubscribed_buttons.append([InlineKeyboardButton(text=' 🔄 Try Again ', url=f"https://t.me/{client.username}?start={message.command[1]}")])
             await message.reply(
                 text=FORCE_MSG.format(
                     first=message.from_user.first_name,
@@ -91,7 +90,7 @@ async def start_command(client: Client, message: Message):
                 ids = [int(int(argument[1]) / abs(client.db_channel.id))]
             except:
                 return
-        temp_msg = await message.reply("Please wait...")
+        temp_msg = await message.reply("Wait a moment...")
         try:
             messages = await get_messages(client, ids)
         except:
@@ -124,9 +123,8 @@ async def start_command(client: Client, message: Message):
             except:
                 pass
         return
-
-    # Regular start message if the user has not used a special link (No force subscription)
     else:
+        # Regular start message if the user has not used a special link
         reply_markup = InlineKeyboardMarkup(
             [
                 [
@@ -177,7 +175,7 @@ async def send_text(client: Bot, message: Message):
         deleted = 0
         unsuccessful = 0
 
-        pls_wait = await message.reply("Broadcasting in progress, please wait...")
+        pls_wait = await message.reply("<i>Broadcasting in progress, please wait...</i>")
         for chat_id in query:
             try:
                 await broadcast_msg.copy(chat_id)
@@ -201,8 +199,8 @@ async def send_text(client: Bot, message: Message):
 
 Total users: <code>{total}</code>
 Successful: <code>{successful}</code>
-Blocked users: <code>{blocked}</code>
-Deleted accounts: <code>{deleted}</code>
+Blocked: <code>{blocked}</code>
+Deleted: <code>{deleted}</code>
 Unsuccessful: <code>{unsuccessful}</code>"""
 
         return await pls_wait.edit(status)
@@ -211,8 +209,3 @@ Unsuccessful: <code>{unsuccessful}</code>"""
         msg = await message.reply(REPLY_ERROR)
         await asyncio.sleep(8)
         await msg.delete()
-
-
-@Bot.on_callback_query(filters.regex('close'))
-async def close_button(client: Client, callback_query: CallbackQuery):
-    await callback_query.message.delete()
