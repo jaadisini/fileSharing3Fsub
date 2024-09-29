@@ -1,5 +1,4 @@
-# (©)CodeXBotz
-# Recoded By @Codeflix_Bots
+# (©)CodeXBotz @Codeflix_Bots
 
 import os
 import asyncio
@@ -38,24 +37,24 @@ async def start_command(client: Client, message: Message):
         # Check subscription status for each channel
         unsubscribed_buttons = []
 
-        # Check and ensure the user is subscribed to all channels
+        # Check if the user is subscribed to each channel
         not_subscribed = False
 
         if not await is_subscribed(client, message.from_user.id, client.invitelink):
-            unsubscribed_buttons.append([InlineKeyboardButton(text="🔴 Join Channel 1", url=client.invitelink)])
+            unsubscribed_buttons.append([InlineKeyboardButton(text=" 🔴 Join Channel ", url=client.invitelink)])
             not_subscribed = True
 
         if not await is_subscribed(client, message.from_user.id, client.invitelink2):
-            unsubscribed_buttons.append([InlineKeyboardButton(text="🔵 Join Channel 2", url=client.invitelink2)])
+            unsubscribed_buttons.append([InlineKeyboardButton(text=" 🔵 Join Channel ", url=client.invitelink2)])
             not_subscribed = True
 
         if not await is_subscribed(client, message.from_user.id, client.invitelink3):
-            unsubscribed_buttons.append([InlineKeyboardButton(text="🟢 Join Channel 3", url=client.invitelink3)])
+            unsubscribed_buttons.append([InlineKeyboardButton(text=" 🟢 Join Channel ", url=client.invitelink3)])
             not_subscribed = True
 
         # If the user is not subscribed to all channels, show the join buttons
         if not_subscribed:
-            unsubscribed_buttons.append([InlineKeyboardButton(text='🔄 Try Again', url=f"https://t.me/{client.username}?start={message.command[1]}")])
+            unsubscribed_buttons.append([InlineKeyboardButton(text=' 🔄 Try Again ', url=f"https://t.me/{client.username}?start={message.command[1]}")])
             await message.reply(
                 text=FORCE_MSG.format(
                     first=message.from_user.first_name,
@@ -92,11 +91,11 @@ async def start_command(client: Client, message: Message):
                 ids = [int(int(argument[1]) / abs(client.db_channel.id))]
             except:
                 return
-        temp_msg = await message.reply("Please wait...")
+        temp_msg = await message.reply("ᴡᴀɪᴛ ʙʀᴏᴏ...")
         try:
             messages = await get_messages(client, ids)
         except:
-            await message.reply_text("Something went wrong.")
+            await message.reply_text("ɪ ꜰᴇᴇʟ ʟɪᴋᴇ ᴛʜᴇʀᴇ ɪꜱ ꜱᴏᴍᴇᴛʜɪɴɢ ᴡʀᴏɴɢ..!")
             return
         await temp_msg.delete()
 
@@ -130,8 +129,8 @@ async def start_command(client: Client, message: Message):
         reply_markup = InlineKeyboardMarkup(
             [
                 [
-                    InlineKeyboardButton("💠 About", callback_data="about"),
-                    InlineKeyboardButton('🔒 Close', callback_data="close")
+                    InlineKeyboardButton("⚡️ ᴀʙᴏᴜᴛ", callback_data="about"),
+                    InlineKeyboardButton('🍁 sᴇʀɪᴇsғʟɪx', url='https://t.me/Team_Netflix/40')
                 ]
             ]
         )
@@ -150,20 +149,20 @@ async def start_command(client: Client, message: Message):
         return
 
 
-# ============================================================================================================##
+# =====================================================================================##
 
-WAIT_MSG = "<b>Working...</b>"
+WAIT_MSG = "<b>ᴡᴏʀᴋɪɴɢ....</b>"
 
 REPLY_ERROR = "<code>Use this command as a reply to any telegram message without any spaces.</code>"
 
-# ============================================================================================================##
+# =====================================================================================##
 
 
 @Bot.on_message(filters.command('users') & filters.private & filters.user(ADMINS))
 async def get_users(client: Bot, message: Message):
     msg = await client.send_message(chat_id=message.chat.id, text=WAIT_MSG)
     users = await full_userbase()
-    await msg.edit(f"{len(users)} users are using this bot.")
+    await msg.edit(f"{len(users)} ᴜꜱᴇʀꜱ ᴀʀᴇ ᴜꜱɪɴɢ ᴛʜɪꜱ ʙᴏᴛ")
 
 
 @Bot.on_message(filters.private & filters.command('broadcast') & filters.user(ADMINS))
@@ -177,7 +176,7 @@ async def send_text(client: Bot, message: Message):
         deleted = 0
         unsuccessful = 0
 
-        pls_wait = await message.reply("<i>Broadcast in progress, please wait...</i>")
+        pls_wait = await message.reply("<i>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴘʀᴏᴄᴇꜱꜱɪɴɢ ᴛɪʟʟ ᴡᴀɪᴛ ʙʀᴏᴏ... </i>")
         for chat_id in query:
             try:
                 await broadcast_msg.copy(chat_id)
@@ -197,13 +196,13 @@ async def send_text(client: Bot, message: Message):
                 pass
             total += 1
 
-        status = f"""Broadcast completed!
+        status = f"""<b><u>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ ᴍʏ sᴇɴᴘᴀɪ!!</u>
 
-Total users: {total}
-Successful: {successful}
-Blocked users: {blocked}
-Deleted accounts: {deleted}
-Unsuccessful: {unsuccessful}"""
+ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ: <code>{total}</code>
+ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ: <code>{successful}</code>
+ʙʟᴏᴄᴋᴇᴅ ᴜꜱᴇʀꜱ: <code>{blocked}</code>
+ᴅᴇʟᴇᴛᴇᴅ ᴀᴄᴄᴏᴜɴᴛꜱ: <code>{deleted}</code>
+ᴜɴꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ: <code>{unsuccessful}</code></b></b>"""
 
         return await pls_wait.edit(status)
 
@@ -213,6 +212,4 @@ Unsuccessful: {unsuccessful}"""
         await msg.delete()
 
 
-@Bot.on_callback_query(filters.regex('close'))
-async def close_button(client: Client, callback_query: CallbackQuery):
-    await callback_query.message.delete()
+@Bot
