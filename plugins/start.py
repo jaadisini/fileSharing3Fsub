@@ -9,8 +9,24 @@ from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 
 from bot import Bot
 from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT, FORCESUB_CHANNEL, FORCESUB_CHANNEL2, FORCESUB_CHANNEL3
-from helper_func import subscribed, encode, decode, get_messages
+from helper_func import encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
+
+
+async def subscribed(client, message):
+    user_id = message.from_user.id
+    joined_channels = []
+
+    # Check each channel and append if the user is a member
+    for channel in [FORCESUB_CHANNEL, FORCESUB_CHANNEL2, FORCESUB_CHANNEL3]:
+        try:
+            member_status = await client.get_chat_member(channel, user_id)
+            if member_status.status in [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
+                joined_channels.append(channel)
+        except Exception as e:
+            print(f"Error checking subscription for {channel}: {e}")
+
+    return joined_channels
 
 
 @Bot.on_message(filters.command('start') & filters.private)
@@ -23,13 +39,13 @@ async def start_command(client: Client, message: Message):
             pass
 
     required_channels = [FORCESUB_CHANNEL, FORCESUB_CHANNEL2, FORCESUB_CHANNEL3]
-    user_joined_channels = await subscribed(client, message)  # Assuming subscribed checks all channels
+    user_joined_channels = await subscribed(client, message)
 
     if not all(channel in user_joined_channels for channel in required_channels):
         # User hasn't joined all channels
         missing_channels = [channel for channel in required_channels if channel not in user_joined_channels]
         buttons = [[InlineKeyboardButton("Join Channel", url=client.invitelink[i])] for i, channel in enumerate(missing_channels)]
-        
+
         await message.reply(
             "You need to join these channels to access content:",
             reply_markup=InlineKeyboardMarkup(buttons)
