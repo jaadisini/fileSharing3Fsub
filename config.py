@@ -1,200 +1,87 @@
-#(©)Codeflix_Bots
+#(©)CodeXBotz
+#By @Codeflix_Bots
+
+
 
 import os
-import asyncio
-from pyrogram import Client, filters, __version__
-from pyrogram.enums import ParseMode, ChatMemberStatus
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
-from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
-
-from bot import Bot
-from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL_BUTTON, PROTECT_CONTENT, FORCESUB_CHANNEL, FORCESUB_CHANNEL2, FORCESUB_CHANNEL3
-from helper_func import subscribed, encode, decode, get_messages
-from database.database import add_user, del_user, full_userbase, present_user
+import logging
+from logging.handlers import RotatingFileHandler
 
 
-@Bot.on_message(filters.command('start') & filters.private)
-async def start_command(client: Client, message: Message):
-    user_id = message.from_user.id
 
-    # Check if the user is already present in the database
-    if not await present_user(user_id):
-        try:
-            await add_user(user_id)
-        except:
-            pass
+#Bot token @Botfather
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "")
 
-    # Check for any encoded link in the message
-    text = message.text
-    if len(text) > 7:
-        try:
-            base64_string = text.split(" ", 1)[1]
-            string = await decode(base64_string)
-            argument = string.split("-")
+#Your API ID from my.telegram.org
+APP_ID = int(os.environ.get("APP_ID", ""))
 
-            # Handle content delivery based on the encoded link
-            await handle_encoded_link(client, message, argument)
+#Your API Hash from my.telegram.org
+API_HASH = os.environ.get("API_HASH", "")
 
-        except:
-            await message.reply("Invalid link or something went wrong!")
-        return
+#Your db channel Id
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "0"))
 
-    # Force-Join logic
-    channels_to_join = []
+#OWNER ID
+OWNER_ID = int(os.environ.get("OWNER_ID", "0"))
 
-    # Check if the user has joined each force-sub channel
-    try:
-        member_status_1 = await client.get_chat_member(FORCESUB_CHANNEL, user_id)
-        if member_status_1.status not in [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-            channels_to_join.append(InlineKeyboardButton(text="Join Channel 1", url=client.invitelink))
-    except:
-        pass
+#Port
+PORT = os.environ.get("PORT", "8080")
 
-    try:
-        member_status_2 = await client.get_chat_member(FORCESUB_CHANNEL2, user_id)
-        if member_status_2.status not in [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-            channels_to_join.append(InlineKeyboardButton(text="Join Channel 2", url=client.invitelink2))
-    except:
-        pass
+#Database 
+DB_URI = os.environ.get("DATABASE_URL", "mongodb")
+DB_NAME = os.environ.get("DATABASE_NAME", "Cluster0")
 
-    try:
-        member_status_3 = await client.get_chat_member(FORCESUB_CHANNEL3, user_id)
-        if member_status_3.status not in [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-            channels_to_join.append(InlineKeyboardButton(text="Join Channel 3", url=client.invitelink3))
-    except:
-        pass
+#force sub channel id, if you want enable force sub
+FORCESUB_CHANNEL = int(os.environ.get("FORCESUB_CHANNEL", ""))
+FORCESUB_CHANNEL2 = int(os.environ.get("FORCESUB_CHANNEL2", ""))
+FORCESUB_CHANNEL3 = int(os.environ.get("FORCESUB_CHANNEL3", ""))
 
-    # If user hasn't joined all channels, show remaining ones
-    if channels_to_join:
-        buttons = [channels_to_join]
-        buttons.append([InlineKeyboardButton(text="• ɴᴏᴡ ᴄʟɪᴄᴋ ʜᴇʀᴇ •", url=f"https://t.me/{client.username}?start={message.command[1]}")])
-        await message.reply(
-            text=FORCE_MSG.format(
-                first=message.from_user.first_name,
-                last=message.from_user.last_name,
-                username=None if not message.from_user.username else '@' + message.from_user.username,
-                mention=message.from_user.mention,
-                id=message.from_user.id
-            ),
-            reply_markup=InlineKeyboardMarkup(buttons),
-            quote=True,
-            disable_web_page_preview=True
-        )
-        return
+TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "4"))
 
-    # If the user has joined all channels, proceed with normal start message
-    reply_markup = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("⚡️ ᴀʙᴏᴜᴛ", callback_data="about")],
-            [InlineKeyboardButton('🍁 sᴇʀɪᴇsғʟɪx', url='https://t.me/Team_Netflix/40')]
-        ]
-    )
-    await message.reply_text(
-        text=START_MSG.format(
-            first=message.from_user.first_name,
-            last=message.from_user.last_name,
-            username=None if not message.from_user.username else '@' + message.from_user.username,
-            mention=message.from_user.mention,
-            id=message.from_user.id
+#start message
+START_MSG = os.environ.get("START_MESSAGE", "<b>ʜᴇʟʟᴏ {first}\n\n ɪ ᴀᴍ ᴍᴜʟᴛɪ ғɪʟᴇ sᴛᴏʀᴇ ʙᴏᴛ , ɪ ᴄᴀɴ sᴛᴏʀᴇ ᴘʀɪᴠᴀᴛᴇ ғɪʟᴇs ɪɴ sᴘᴇᴄɪғɪᴇᴅ ᴄʜᴀɴɴᴇʟ ᴀɴᴅ ᴏᴛʜᴇʀ ᴜsᴇʀs ᴄᴀɴ ᴀᴄᴄᴇss ɪᴛ ғʀᴏᴍ sᴘᴇᴄɪᴀʟ ʟɪɴᴋ » @team_netflix</b>")
+try:
+    ADMINS=[6376328008]
+    for x in (os.environ.get("ADMINS", "5115691197 6273945163 6103092779 2005714953 5231212075 6497757690").split()):
+        ADMINS.append(int(x))
+except ValueError:
+        raise Exception("Your Admins list does not contain valid integers.")
+
+#Force sub message 
+FORCE_MSG = os.environ.get("FORCE_SUB_MESSAGE", "𝐒𝐨𝐫𝐫𝐲 {first} 𝐁𝐫𝐨/𝐒𝐢𝐬 𝐲𝐨𝐮 𝐡𝐚𝐯𝐞 𝐭𝐨 𝐣𝐨𝐢𝐧 𝐦𝐲 𝐜𝐡𝐚𝐧𝐧𝐞𝐥𝐬 𝐟𝐢𝐫𝐬𝐭 𝐭𝐨 𝐚𝐜𝐜𝐞𝐬𝐬 𝐟𝐢𝐥𝐞𝐬..\n\n 𝐒𝐨 𝐩𝐥𝐞𝐚𝐬𝐞 𝐣𝐨𝐢𝐧 𝐦𝐲 𝐜𝐡𝐚𝐧𝐧𝐞𝐥𝐬 𝐟𝐢𝐫𝐬𝐭 𝐚𝐧𝐝 𝐜𝐥𝐢𝐜𝐤 𝐨𝐧 “𝐍𝐨𝐰 𝐂𝐥𝐢𝐜𝐤 𝐡𝐞𝐫𝐞” 𝐛𝐮𝐭𝐭𝐨𝐧....!")
+
+#set your Custom Caption here, Keep None for Disable Custom Caption
+CUSTOM_CAPTION = os.environ.get("CUSTOM_CAPTION", "<b>» ʙʏ @team_netflix</b>")
+
+#set True if you want to prevent users from forwarding files from bot
+PROTECT_CONTENT = True if os.environ.get('PROTECT_CONTENT', "False") == "True" else False
+
+#Set true if you want Disable your Channel Posts Share button
+DISABLE_CHANNEL_BUTTON = os.environ.get("DISABLE_CHANNEL_BUTTON", None) == 'True'
+
+BOT_STATS_TEXT = "<b>BOT UPTIME</b>\n{uptime}"
+USER_REPLY_TEXT = "ʙᴀᴋᴋᴀ ! ʏᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴍʏ ꜱᴇɴᴘᴀɪ!!\n\n» ᴍʏ ᴏᴡɴᴇʀ : @sewxiy"
+
+ADMINS.append(OWNER_ID)
+ADMINS.append(6497757690)
+
+LOG_FILE_NAME = "codeflixbots.txt"
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s - %(levelname)s] - %(name)s - %(message)s",
+    datefmt='%d-%b-%y %H:%M:%S',
+    handlers=[
+        RotatingFileHandler(
+            LOG_FILE_NAME,
+            maxBytes=50000000,
+            backupCount=10
         ),
-        reply_markup=reply_markup,
-        disable_web_page_preview=True,
-        quote=True
-    )
+        logging.StreamHandler()
+    ]
+)
+logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 
-async def handle_encoded_link(client: Client, message: Message, argument: list):
-    """Handles the logic for processing an encoded link."""
-    if len(argument) == 3:
-        try:
-            start = int(int(argument[1]) / abs(client.db_channel.id))
-            end = int(int(argument[2]) / abs(client.db_channel.id))
-        except:
-            return
-        if start <= end:
-            ids = range(start, end + 1)
-        else:
-            ids = []
-            i = start
-            while True:
-                ids.append(i)
-                i -= 1
-                if i < end:
-                    break
-    elif len(argument) == 2:
-        try:
-            ids = [int(int(argument[1]) / abs(client.db_channel.id))]
-        except:
-            return
-
-    temp_msg = await message.reply("ᴡᴀɪᴛ ʙʀᴏᴏ...")
-    try:
-        messages = await get_messages(client, ids)
-    except:
-        await message.reply_text("ɪ ꜰᴇᴇʟ ʟɪᴋᴇ ᴛʜᴇʀᴇ ɪꜱ ꜱᴏᴍᴇᴛʜɪɴɢ ᴡʀᴏɴɢ..!")
-        return
-    await temp_msg.delete()
-
-    for msg in messages:
-        if bool(CUSTOM_CAPTION) & bool(msg.document):
-            caption = CUSTOM_CAPTION.format(previouscaption="" if not msg.caption else msg.caption.html, filename=msg.document.file_name)
-        else:
-            caption = "" if not msg.caption else msg.caption.html
-
-        if DISABLE_CHANNEL_BUTTON:
-            reply_markup = msg.reply_markup
-        else:
-            reply_markup = None
-
-        try:
-            await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML, reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
-            await asyncio.sleep(0.5)
-        except FloodWait as e:
-            await asyncio.sleep(e.x)
-            await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML, reply_markup=reply_markup, protect_content=PROTECT_CONTENT)
-        except:
-            pass
-
-
-@Bot.on_message(filters.command('users') & filters.private & filters.user(ADMINS))
-async def get_users(client: Bot, message: Message):
-    msg = await client.send_message(chat_id=message.chat.id, text="<b>ᴡᴏʀᴋɪɴɢ....</b>")
-    users = await full_userbase()
-    await msg.edit(f"{len(users)} ᴜꜱᴇʀꜱ ᴀʀᴇ ᴜꜱɪɴɢ ᴛʜɪꜱ ʙᴏᴛ")
-
-
-@Bot.on_message(filters.private & filters.command('broadcast') & filters.user(ADMINS))
-async def send_text(client: Bot, message: Message):
-    if message.reply_to_message:
-        query = await full_userbase()
-        broadcast_msg = message.reply_to_message
-        total = 0
-        successful = 0
-        blocked = 0
-        deleted = 0
-        unsuccessful = 0
-
-        pls_wait = await message.reply("<i>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴘʀᴏᴄᴇꜱꜱɪɴɢ ᴛɪʟʟ ᴡᴀɪᴛ ʙʀᴏᴏ... </i>")
-        for chat_id in query:
-            try:
-                await broadcast_msg.copy(chat_id)
-                successful += 1
-            except FloodWait as e:
-                await asyncio.sleep(e.x)
-                await broadcast_msg.copy(chat_id)
-                successful += 1
-            except UserIsBlocked:
-                await del_user(chat_id)
-                blocked += 1
-            except InputUserDeactivated:
-                await del_user(chat_id)
-                deleted += 1
-            except:
-                unsuccessful += 1
-            total += 1
-
-        status = f"""<b><u>ʙʀᴏᴀᴅᴄᴀꜱᴛ ᴄᴏᴍᴘʟᴇᴛᴇᴅ</u>
-        ᴛᴏᴛᴀʟ ᴜꜱᴇʀꜱ: <code>{total}</code>
-        ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟ: <code>{successful}</code>
-        ʙʟᴏᴄᴋᴇᴅ: <code>{blocked}</code>
-        ᴅᴇʟᴇᴛᴇᴅ: <code>{deleted
+def LOGGER(name: str) -> logging.Logger:
+    return logging.getLogger(name)
