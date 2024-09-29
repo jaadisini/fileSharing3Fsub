@@ -61,7 +61,7 @@ async def start_command(client: Client, message: Message):
             try:
                 messages = await get_messages(client, ids)
             except:
-                await message.reply_text("Something went wrong!")
+                await message.reply_text("I feel like something is wrong!")
                 return
             await temp_msg.delete()
 
@@ -94,17 +94,15 @@ async def start_command(client: Client, message: Message):
             # If not subscribed, send force-join message
             buttons = [
                 [
-                    InlineKeyboardButton(text="🔴 Join Channel 1", url=client.invitelink),
+                    InlineKeyboardButton(text="Join Channel", url=client.invitelink2),
+                    InlineKeyboardButton(text="Join Channel", url=client.invitelink3),
                 ],
                 [
-                    InlineKeyboardButton(text="🔵 Join Channel 2", url=client.invitelink2),
-                ],
-                [
-                    InlineKeyboardButton(text="🟢 Join Channel 3", url=client.invitelink3),
+                    InlineKeyboardButton(text="Join Channel", url=client.invitelink),
                 ],
                 [
                     InlineKeyboardButton(
-                        text='🔄 Try Again',
+                        text='Try Again',
                         url=f"https://t.me/{client.username}?start={message.command[1]}"
                     )
                 ]
@@ -127,7 +125,7 @@ async def start_command(client: Client, message: Message):
         reply_markup = InlineKeyboardMarkup(
             [
                 [
-                    InlineKeyboardButton("⚡️ About", callback_data="about"),
+                    InlineKeyboardButton("💠 About", callback_data="about"),
                     InlineKeyboardButton('🔒 Close', callback_data="close")
                 ]
             ]
@@ -149,7 +147,7 @@ async def start_command(client: Client, message: Message):
 
 # ============================================================================================================##
 
-WAIT_MSG = "<b>Working...</b>"
+WAIT_MSG = "<b>Please wait...</b>"
 
 REPLY_ERROR = "<code>Use this command as a reply to any telegram message without any spaces.</code>"
 
