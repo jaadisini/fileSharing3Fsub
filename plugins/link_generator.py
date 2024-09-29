@@ -51,12 +51,11 @@ async def batch(client: Client, message: Message):
             await second_message.reply("❌ Error\n\nIt's not from the Database Channel. Try again!", quote=True)
             continue
 
-    if not is_canceled:
-        string = f"get-{f_msg_id * abs(client.db_channel.id)}-{s_msg_id * abs(client.db_channel.id)}"
-        base64_string = await encode(string)
-        link = f"https://telegram.me/{client.username}?start={base64_string}"
-        reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
-        await second_message.reply_text(f"<b>Here is your link</b>\n\n{link}", quote=True, reply_markup=reply_markup)
+    string = f"get-{f_msg_id * abs(client.db_channel.id)}-{s_msg_id * abs(client.db_channel.id)}"
+    base64_string = await encode(string)
+    link = f"https://telegram.me/{client.username}?start={base64_string}"
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
+    await second_message.reply_text(f"<b>Here is your link</b>\n\n{link}", quote=True, reply_markup=reply_markup)
 
 
 @Bot.on_message(filters.private & filters.user(ADMINS) & filters.command('genlink'))
@@ -82,11 +81,10 @@ async def link_generator(client: Client, message: Message):
             await channel_message.reply("❌ Error\n\nIt's not from the Database Channel. Try again!", quote=True)
             continue
 
-    if not is_canceled:
-        base64_string = await encode(f"get-{msg_id * abs(client.db_channel.id)}")
-        link = f"https://telegram.me/{client.username}?start={base64_string}"
-        reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
-        await channel_message.reply_text(f"<b>Here is your link</b>\n\n{link}", quote=True, reply_markup=reply_markup)
+    base64_string = await encode(f"get-{msg_id * abs(client.db_channel.id)}")
+    link = f"https://telegram.me/{client.username}?start={base64_string}"
+    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
+    await channel_message.reply_text(f"<b>Here is your link</b>\n\n{link}", quote=True, reply_markup=reply_markup)
 
 
 @Bot.on_message(filters.private & filters.user(ADMINS) & filters.command('cancel'))
@@ -94,10 +92,3 @@ async def cancel_process(client: Client, message: Message):
     global is_canceled
     is_canceled = True  # Set the canceled flag to True
     await message.reply("🚫 Process has been canceled.")
-
-
-### Steps to Ensure It Works:
-1. Ensure you run the `/cancel` command while the `/batch` or `/genlink` process is active.
-2. Test `/cancel` after initiating a link generation process and see if it stops the process.
-
-Let me know if it works or if more debugging is needed!
