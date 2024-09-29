@@ -120,15 +120,55 @@ REPLY_ERROR = "<code>Use this command as a reply to any telegram message without
     
 @Bot.on_message(filters.command('start') & filters.private)
 async def not_joined(client: Client, message: Message):
-    buttons = [
-        [
-            InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=client.invitelink2),
-            InlineKeyboardButton(text="ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ •", url=client.invitelink3),
-        ],
-        [
-            InlineKeyboardButton(text="• ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ •", url=client.invitelink),
-        ]
-    ]
+   
+ @Bot.on_message(filters.command('start') & filters.private)
+async def start_command(client: Client, message: Message):
+    user_id = message.from_user.id
+
+    # List of channels the user needs to join
+    channels_to_join = []
+    
+    # Check subscription for each channel individually
+    if not await client.get_chat_member(chat_id=FORCESUB_CHANNEL, user_id=user_id).status in [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
+        channels_to_join.append(InlineKeyboardButton(text="Join Channel 1", url=client.invitelink))
+        
+    if not await client.get_chat_member(chat_id=FORCESUB_CHANNEL2, user_id=user_id).status in [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
+        channels_to_join.append(InlineKeyboardButton(text="Join Channel 2", url=client.invitelink2))
+        
+    if not await client.get_chat_member(chat_id=FORCESUB_CHANNEL3, user_id=user_id).status in [ChatMemberStatus.MEMBER, ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
+        channels_to_join.append(InlineKeyboardButton(text="Join Channel 3", url=client.invitelink3))
+
+    # If user has not joined all channels, show the buttons for remaining channels
+    if channels_to_join:
+        buttons = [channels_to_join]
+        try:
+            buttons.append(
+                [
+                    InlineKeyboardButton(
+                        text = '• Now Click Here •',
+                        url = f"https://t.me/{client.username}?start={message.command[1]}"
+                    )
+                ]
+            )
+        except IndexError:
+            pass
+
+        await message.reply(
+            text = FORCE_MSG.format(
+                first = message.from_user.first_name,
+                last = message.from_user.last_name,
+                username = None if not message.from_user.username else '@' + message.from_user.username,
+                mention = message.from_user.mention,
+                id = message.from_user.id
+            ),
+            reply_markup = InlineKeyboardMarkup(buttons),
+            quote = True,
+            disable_web_page_preview = True
+        )
+        return
+
+    # If user has joined all channels, send the requested file or message
+    await send_file_or_message_to_user(client, message)  # Your function to send the requested file/content
     try:
         buttons.append(
             [
