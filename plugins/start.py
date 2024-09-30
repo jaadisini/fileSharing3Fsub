@@ -4,7 +4,7 @@ import os
 import asyncio
 from pyrogram import Client, filters, __version__
 from pyrogram.enums import ParseMode
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated
 
 from bot import Bot
@@ -12,12 +12,13 @@ from config import ADMINS, FORCE_MSG, START_MSG, CUSTOM_CAPTION, DISABLE_CHANNEL
 from helper_func import subscribed, encode, decode, get_messages
 from database.database import add_user, del_user, full_userbase, present_user
 
+
 @Bot.on_message(filters.command('start') & filters.private)
 async def start_command(client: Client, message: Message):
-    user_id = message.from_user.id
-    if not await present_user(user_id):
+    id = message.from_user.id
+    if not await present_user(id):
         try:
-            await add_user(user_id)
+            await add_user(id)
         except:
             pass
 
@@ -33,21 +34,29 @@ async def start_command(client: Client, message: Message):
         string = await decode(base64_string)
         argument = string.split("-")
 
-        # Check subscription status
+        # If subscribed, give access to files
         if await subscribed(client, message):
             if len(argument) == 3:
                 try:
-                    start = int(int(argument[1]) / abs(client.db_channels[0].id))  # Use the first channel's id
-                    end = int(int(argument[2]) / abs(client.db_channels[0].id))
+                    start = int(int(argument[1]) / abs(client.db_channel.id))
+                    end = int(int(argument[2]) / abs(client.db_channel.id))
                 except:
                     return
-                ids = range(start, end + 1) if start <= end else []
+                if start <= end:
+                    ids = range(start, end + 1)
+                else:
+                    ids = []
+                    i = start
+                    while True:
+                        ids.append(i)
+                        i -= 1
+                        if i < end:
+                            break
             elif len(argument) == 2:
                 try:
-                    ids = [int(int(argument[1]) / abs(client.db_channels[0].id))]
+                    ids = [int(int(argument[1]) / abs(client.db_channel.id))]
                 except:
                     return
-
             temp_msg = await message.reply("Please wait...")
             try:
                 messages = await get_messages(client, ids)
@@ -65,7 +74,10 @@ async def start_command(client: Client, message: Message):
                 else:
                     caption = "" if not msg.caption else msg.caption.html
 
-                reply_markup = msg.reply_markup if not DISABLE_CHANNEL_BUTTON else None
+                if DISABLE_CHANNEL_BUTTON:
+                    reply_markup = msg.reply_markup
+                else:
+                    reply_markup = None
 
                 try:
                     await msg.copy(chat_id=message.from_user.id, caption=caption, parse_mode=ParseMode.HTML,
@@ -81,10 +93,22 @@ async def start_command(client: Client, message: Message):
         else:
             # If not subscribed, send force-join message
             buttons = [
-                [InlineKeyboardButton(text="🔴 Join Channel ", url=client.invitelink)],
-                [InlineKeyboardButton(text="🔵 Join Channel ", url=client.invitelink2)],
-                [InlineKeyboardButton(text="🟢 Join Channel ", url=client.invitelink3)],
-                [InlineKeyboardButton(text='🔄 Try Again', url=f"https://t.me/{client.username}?start={message.command[1]}")]
+                [
+                    InlineKeyboardButton(text="🔴 Join Channel ", url=client.invitelink),
+                ],
+                [
+                    InlineKeyboardButton(text="🔵 Join Channel ", url=client.invitelink2),
+                ],
+                [
+                    InlineKeyboardButton(text="🟢 Join Channel ", url=client.invitelink3),
+                ],
+                [
+                    InlineKeyboardButton(
+                        text='🔄 Try Again',
+                        
+url=f"https://t.me/{client.username}?start={message.command[1]}"
+                    )
+                ]
             ]
             await message.reply(
                 text=FORCE_MSG.format(
@@ -103,8 +127,10 @@ async def start_command(client: Client, message: Message):
         # Regular start message if the user has not used a special link
         reply_markup = InlineKeyboardMarkup(
             [
-                [InlineKeyboardButton("💠 About", callback_data="about"),
-                 InlineKeyboardButton('🔒 Close', callback_data="close")]
+                [
+                    InlineKeyboardButton("💠 About", callback_data="about"),
+                    InlineKeyboardButton('🔒 Close', callback_data="close")
+                ]
             ]
         )
         await message.reply_text(
@@ -121,16 +147,22 @@ async def start_command(client: Client, message: Message):
         )
         return
 
-# Additional command handlers below...
+
+# ============================================================================================================##
 
 WAIT_MSG = "<b>Please wait...</b>"
+
 REPLY_ERROR = "<code>Use this command as a reply to any telegram message without any spaces.</code>"
+
+# ============================================================================================================##
+
 
 @Bot.on_message(filters.command('users') & filters.private & filters.user(ADMINS))
 async def get_users(client: Bot, message: Message):
     msg = await client.send_message(chat_id=message.chat.id, text=WAIT_MSG)
     users = await full_userbase()
     await msg.edit(f"{len(users)} users are using this bot.")
+
 
 @Bot.on_message(filters.private & filters.command('broadcast') & filters.user(ADMINS))
 async def send_text(client: Bot, message: Message):
