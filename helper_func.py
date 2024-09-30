@@ -1,5 +1,5 @@
-#(©)Codexbotz
-#Recoded By @Codeflix_Bots
+# (©)Codexbotz
+# Recoded By @Codeflix_Bots
 
 import base64
 import re
@@ -53,46 +53,43 @@ async def get_messages(client, message_ids):
     total_messages = 0
     while total_messages != len(message_ids):
         temb_ids = message_ids[total_messages:total_messages+200]
-        try:
-            msgs = await client.get_messages(
-                chat_id=client.db_channel.id,
-                message_ids=temb_ids
-            )
-        except FloodWait as e:
-            await asyncio.sleep(e.x)
-            msgs = await client.get_messages(
-                chat_id=client.db_channel.id,
-                message_ids=temb_ids
-            )
-        except:
-            pass
-        total_messages += len(temb_ids)
-        messages.extend(msgs)
+        for db_channel in client.db_channels:
+            try:
+                msgs = await client.get_messages(
+                    chat_id=db_channel.id,
+                    message_ids=temb_ids
+                )
+            except FloodWait as e:
+                await asyncio.sleep(e.x)
+                msgs = await client.get_messages(
+                    chat_id=db_channel.id,
+                    message_ids=temb_ids
+                )
+            except:
+                pass
+            total_messages += len(temb_ids)
+            messages.extend(msgs)
     return messages
 
 async def get_message_id(client, message):
-    if message.forward_from_chat:
-        if message.forward_from_chat.id == client.db_channel.id:
-            return message.forward_from_message_id
-        else:
-            return 0
-    elif message.forward_sender_name:
-        return 0
-    elif message.text:
-        pattern = "https://t.me/(?:c/)?(.*)/(\d+)"
-        matches = re.match(pattern, message.text)
-        if not matches:
-            return 0
-        channel_id = matches.group(1)
-        msg_id = int(matches.group(2))
-        if channel_id.isdigit():
-            if f"-100{channel_id}" == str(client.db_channel.id):
-                return msg_id
-        else:
-            if channel_id == client.db_channel.username:
-                return msg_id
-    else:
-        return 0
+    for db_channel in client.db_channels:
+        if message.forward_from_chat:
+            if message.forward_from_chat.id == db_channel.id:
+                return message.forward_from_message_id
+        elif message.text:
+            pattern = "https://t.me/(?:c/)?(.*)/(\d+)"
+            matches = re.match(pattern, message.text)
+            if not matches:
+                return 0
+            channel_id = matches.group(1)
+            msg_id = int(matches.group(2))
+            if channel_id.isdigit():
+                if f"-100{channel_id}" == str(db_channel.id):
+                    return msg_id
+            else:
+                if channel_id == db_channel.username:
+                    return msg_id
+    return 0
 
 def get_readable_time(seconds: int) -> str:
     count = 0
