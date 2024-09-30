@@ -7,6 +7,7 @@ from bot import Bot
 from config import ADMINS, CHANNEL_IDS
 from helper_func import encode, get_message_id
 
+# Helper function to check if the forwarded message is from a valid channel
 def is_valid_channel(message, channels):
     return any([message.forward_from_chat and message.forward_from_chat.id == channel_id for channel_id in channels])
 
@@ -89,7 +90,7 @@ async def link_generator(client: Client, message: Message):
     await channel_message.reply_text(f"<b>Here is your link</b>\n\n{link}", quote=True, reply_markup=reply_markup)
 
 
-# Ensure that no random messages trigger link generation
+# Ignore random messages and prevent unwanted link generation
 @Bot.on_message(filters.private & filters.user(ADMINS) & ~filters.command(['batch', 'genlink']))
 async def ignore_messages(client: Client, message: Message):
     # This will ensure random messages do not generate links
