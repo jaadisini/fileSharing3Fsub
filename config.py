@@ -14,8 +14,14 @@ APP_ID = int(os.environ.get("APP_ID", ""))
 # Your API Hash from my.telegram.org
 API_HASH = os.environ.get("API_HASH", "")
 
-# Your db channel Id
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "0"))
+# Your db channel IDs (multiple channels)
+CHANNEL_IDS = []
+try:
+    for x in os.environ.get("CHANNEL_IDS", "").split():
+        CHANNEL_IDS.append(int(x))  # Converts each channel ID to integer and appends to list
+except ValueError:
+    raise Exception("Your CHANNEL_IDS list does not contain valid integers.")
+
 
 # OWNER ID
 OWNER_ID = int(os.environ.get("OWNER_ID", "0"))
