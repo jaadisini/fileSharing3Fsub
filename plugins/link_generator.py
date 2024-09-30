@@ -87,3 +87,10 @@ async def link_generator(client: Client, message: Message):
     link = f"https://telegram.me/{client.username}?start={base64_string}"
     reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("🔁 Share URL", url=f'https://telegram.me/share/url?url={link}')]])
     await channel_message.reply_text(f"<b>Here is your link</b>\n\n{link}", quote=True, reply_markup=reply_markup)
+
+
+# Ensure that no random messages trigger link generation
+@Bot.on_message(filters.private & filters.user(ADMINS) & ~filters.command(['batch', 'genlink']))
+async def ignore_messages(client: Client, message: Message):
+    # This will ensure random messages do not generate links
+    await message.reply_text("Please use /genlink or /batch to generate links.", quote=True)
