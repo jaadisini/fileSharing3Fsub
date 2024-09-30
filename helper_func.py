@@ -52,23 +52,24 @@ async def get_messages(client, message_ids):
     messages = []
     total_messages = 0
     while total_messages != len(message_ids):
-        temb_ids = message_ids[total_messages:total_messages+200]
+        temb_ids = message_ids[total_messages:total_messages + 200]
         for db_channel in client.db_channels:
             try:
                 msgs = await client.get_messages(
                     chat_id=db_channel.id,
                     message_ids=temb_ids
                 )
+                messages.extend(msgs)  # Collect messages from this channel
             except FloodWait as e:
                 await asyncio.sleep(e.x)
                 msgs = await client.get_messages(
                     chat_id=db_channel.id,
                     message_ids=temb_ids
                 )
-            except:
-                pass
-            total_messages += len(temb_ids)
-            messages.extend(msgs)
+                messages.extend(msgs)  # Collect messages again after wait
+            except Exception as e:
+                print(e)  # Handle any unexpected errors
+        total_messages += len(temb_ids)
     return messages
 
 async def get_message_id(client, message):
