@@ -1,4 +1,4 @@
-#(©)Codexbotz @Codeflix_Bots
+# (©)Codexbotz @Codeflix_Bots
 
 from aiohttp import web
 from plugins import web_server
@@ -70,13 +70,16 @@ class Bot(Client):
                 self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/weebs_support for support")
                 sys.exit()       
         try:
-            db_channel = await self.get_chat(CHANNEL_ID)
-            self.db_channel = db_channel
-            test = await self.send_message(chat_id = db_channel.id, text = "Test Message")
-            await test.delete()
+            # Loop through each channel ID to set up multiple database channels
+            self.db_channels = []
+            for channel_id in CHANNEL_IDS:
+                db_channel = await self.get_chat(channel_id)
+                self.db_channels.append(db_channel)
+                test = await self.send_message(chat_id=db_channel.id, text="Test Message")
+                await test.delete()
         except Exception as e:
             self.LOGGER(__name__).warning(e)
-            self.LOGGER(__name__).warning(f"Make Sure bot is Admin in DB Channel, and Double check the CHANNEL_ID Value, Current Value {CHANNEL_ID}")
+            self.LOGGER(__name__).warning(f"Make Sure bot is Admin in DB Channel, and Double check the CHANNEL_IDS Values, Current Value {CHANNEL_IDS}")
             self.LOGGER(__name__).info("\nBot Stopped. Join https://t.me/weebs_support for support")
             sys.exit()
 
@@ -94,7 +97,7 @@ class Bot(Client):
                                                                                 
                                           """)
         self.username = usr_bot_me.username
-        #web-response
+        # web-response
         app = web.AppRunner(await web_server())
         await app.setup()
         bind_address = "0.0.0.0"
