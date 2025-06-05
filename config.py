@@ -27,7 +27,7 @@ PORT = os.environ.get("PORT", "8080")
 
 # Database 
 DB_URI = os.environ.get("DATABASE_URL", "mongodb")
-DB_NAME = os.environ.get("DATABASE_NAME", "Cluster0")
+DB_NAME = os.environ.get("DATABASE_NAME", "filesharexbot"")
 
 # Force sub channel id, if you want enable force sub
 FORCESUB_CHANNEL = int(os.environ.get("FORCESUB_CHANNEL", ""))
