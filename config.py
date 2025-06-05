@@ -4,6 +4,8 @@
 import os
 import logging
 from logging.handlers import RotatingFileHandler
+from dotenv import load_dotenv
+load_dotenv()
 
 # Bot token from @Botfather
 TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "")
