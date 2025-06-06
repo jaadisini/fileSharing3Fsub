@@ -10,31 +10,31 @@ load_dotenv()
 print("DEBUG TG_BOT_TOKEN:", os.environ.get("TG_BOT_TOKEN"))
 
 # Bot token from @Botfather
-TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "")
+TG_BOT_TOKEN = os.environ.get("TG_BOT_TOKEN", "7736892583:AAHPSAILxq5dt6rApsCdkaq5TieGf__Ykr8")
 
 # Your API ID from my.telegram.org
-APP_ID = int(os.environ.get("APP_ID", ""))
+APP_ID = int(os.environ.get("APP_ID", "24773720"))
 
 # Your API Hash from my.telegram.org
-API_HASH = os.environ.get("API_HASH", "")
+API_HASH = os.environ.get("API_HASH", "b8158aa3d0e6deabfb14c92ccf95ff8d")
 
 # Your db channel Id
-CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "0"))
+CHANNEL_ID = int(os.environ.get("CHANNEL_ID", "-1002654026135"))
 
 # OWNER ID
-OWNER_ID = int(os.environ.get("OWNER_ID", "0"))
+OWNER_ID = int(os.environ.get("OWNER_ID", "7688387817"))
 
 # Port
 PORT = os.environ.get("PORT", "8080")
 
 # Database 
-DB_URI = os.environ.get("DATABASE_URL", "mongodb")
+DB_URI = os.environ.get("DATABASE_URL", "mongodb+srv://erkbwrs084:909090@cluster0.qdrfgmb.mongodb.net/?retryWrites=true&w=majority")
 DB_NAME = os.environ.get("DATABASE_NAME", "filesharexbot")
 
 # Force sub channel id, if you want enable force sub
-FORCESUB_CHANNEL = int(os.environ.get("FORCESUB_CHANNEL", ""))
-FORCESUB_CHANNEL2 = int(os.environ.get("FORCESUB_CHANNEL2", ""))
-FORCESUB_CHANNEL3 = int(os.environ.get("FORCESUB_CHANNEL3", ""))
+FORCESUB_CHANNEL = int(os.environ.get("FORCESUB_CHANNEL", "-1002282577591"))
+FORCESUB_CHANNEL2 = int(os.environ.get("FORCESUB_CHANNEL2", "-1002350008026"))
+FORCESUB_CHANNEL3 = int(os.environ.get("FORCESUB_CHANNEL3", "-1002406379151"))
 
 TG_BOT_WORKERS = int(os.environ.get("TG_BOT_WORKERS", "4"))
 
@@ -48,7 +48,7 @@ START_MSG = os.environ.get("START_MESSAGE",
 # ADMINS list
 ADMINS = []
 try:
-    for x in os.environ.get("ADMINS", "").split():
+    for x in os.environ.get("ADMINS", "7688387817").split():
         ADMINS.append(int(x))
 except ValueError:
     raise Exception("Your Admins list does not contain valid integers.")
