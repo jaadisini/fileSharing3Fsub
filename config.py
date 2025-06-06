@@ -1,12 +1,14 @@
-#(©)CodeXBotz
-#By @Codeflix_Bots
-
 import os
 import logging
 from logging.handlers import RotatingFileHandler
 from dotenv import load_dotenv
+
+# Load environment variables from .env file
 load_dotenv()
-print("DEBUG TG_BOT_TOKEN:")
+
+# Debug print (optional)
+print("DEBUG TG_BOT_TOKEN:", os.environ.get("TG_BOT_TOKEN"))
+
 
 
 
