@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Debug print (optional)
-print("DEBUG TG_BOT_TOKEN:", os.environ.get("TG_BOT_TOKEN"))
+print("DEBUG TG_BOT_TOKEN:", os.environ.get("TG_BOT_TOKEN", "7736892583:AAHPSAILxq5dt6rApsCdkaq5TieGf__Ykr8"))
 
 
 
